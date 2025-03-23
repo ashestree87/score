@@ -110,6 +110,43 @@ The application uses Tailwind CSS for styling. The main color scheme is defined 
 
 [MIT License](LICENSE)
 
+## Deployment
+
+### GitHub Pages
+
+This project can be easily deployed to GitHub Pages:
+
+1. Push your code to GitHub
+2. Enable GitHub Pages in your repository settings
+3. The included GitHub Actions workflow will automatically build and deploy your site
+
+### Netlify
+
+To deploy to Netlify:
+
+1. Push your code to GitHub
+2. Connect your GitHub repository to Netlify
+3. The included `netlify.toml` file will configure the build settings
+
+### Cloudflare Pages
+
+To deploy to Cloudflare Pages:
+
+1. Push your code to GitHub
+2. Connect your GitHub repository to Cloudflare Pages
+3. Set the build command to `npm run build`
+4. Set the output directory to `dist`
+
+## Troubleshooting
+
+If you encounter dependency conflicts during installation, try running:
+
+```bash
+npm install --legacy-peer-deps
+```
+
+This project includes an `.npmrc` file with `legacy-peer-deps=true` to help avoid these issues.
+
 ```sh
 npm create astro@latest -- --template basics
 ```
