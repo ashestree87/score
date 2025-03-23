@@ -11,7 +11,7 @@ console.log("interests:", Astro.url.searchParams.getAll('interests'));
 <QuizLayout title="Quiz | Question 1" currentStep={1} totalSteps={5}>
 	<h1 class="text-2xl font-bold text-primary mb-6">What's your primary goal?</h1>
 	
-	<form action="/quiz/question/2" method="get" class="space-y-6">
+	<form action="/quiz/question/2" method="get" class="space-y-6" id="goalForm">
 		<!-- Pass along previous data -->
 		<input type="hidden" name="name" value={Astro.url.searchParams.get('name') || ''} />
 		<input type="hidden" name="email" value={Astro.url.searchParams.get('email') || ''} />
@@ -80,13 +80,14 @@ console.log("interests:", Astro.url.searchParams.getAll('interests'));
 		
 		<div class="pt-4 flex justify-between">
 			<a 
-				href="/quiz/start" 
+				href={`/quiz/start?name=${encodeURIComponent(Astro.url.searchParams.get('name') || '')}&email=${encodeURIComponent(Astro.url.searchParams.get('email') || '')}`}
 				class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
 			>
 				Previous
 			</a>
 			<button 
-				type="submit" 
+				type="submit"
+				id="goalButton" 
 				class="inline-flex items-center px-6 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90"
 			>
 				Next Question
@@ -94,3 +95,59 @@ console.log("interests:", Astro.url.searchParams.getAll('interests'));
 		</div>
 	</form>
 </QuizLayout> 
+
+<script>
+	// Enhanced form submission for Question 1
+	document.addEventListener('DOMContentLoaded', () => {
+		const form = document.getElementById('goalForm') as HTMLFormElement;
+		
+		if (form) {
+			form.addEventListener('submit', (e) => {
+				e.preventDefault(); // Prevent default form submission
+				
+				// Get form data
+				const formData = new FormData(form);
+				
+				// Get basic fields
+				const name = formData.get('name')?.toString() || '';
+				const email = formData.get('email')?.toString() || '';
+				const primaryGoal = formData.get('primary_goal')?.toString() || '';
+				
+				// Get interests array
+				const interests = formData.getAll('interests').map(value => value.toString());
+				
+				// Log the data for debugging
+				console.log('Goal form submission data:');
+				console.log('Name:', name);
+				console.log('Email:', email);
+				console.log('Interests:', interests);
+				console.log('Primary Goal:', primaryGoal);
+				
+				// Validate a goal is selected
+				if (!primaryGoal) {
+					alert('Please select your primary goal');
+					return false;
+				}
+				
+				// Create URL with all parameters properly encoded
+				const url = new URL('/quiz/question/2', window.location.origin);
+				
+				// Add the basic parameters
+				url.searchParams.set('name', name);
+				url.searchParams.set('email', email);
+				url.searchParams.set('primary_goal', primaryGoal);
+				
+				// Add all interests
+				interests.forEach(interest => {
+					url.searchParams.append('interests', interest);
+				});
+				
+				// Log the final URL
+				console.log('Navigating to URL:', url.toString());
+				
+				// Navigate to the new URL
+				window.location.href = url.toString();
+			});
+		}
+	});
+</script> 

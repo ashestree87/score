@@ -306,6 +306,12 @@ const recommendations = generateRecommendations(Astro.url.searchParams);
 		if (missingResources) headerContent += '<p style="color:orange">NOTE: No preferred resources were selected</p>';
 		headerContent += '<p>Submitting quiz data...</p>';
 		
+		// Add a section for the raw URL parameters
+		headerContent += '<div style="margin-top: 10px; padding: 10px; background-color: #e0e0e0; border-radius: 4px;">';
+		headerContent += '<h4>Raw URL Parameters</h4>';
+		headerContent += '<pre style="font-size: 12px; overflow-x: auto;">' + window.location.search + '</pre>';
+		headerContent += '</div>';
+		
 		debugSection.innerHTML = headerContent;
 		document.body.appendChild(debugSection);
 		

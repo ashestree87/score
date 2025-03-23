@@ -132,6 +132,7 @@ console.log("experience_level:", Astro.url.searchParams.get('experience_level'))
 			</a>
 			<button 
 				type="submit" 
+				id="resourcesButton"
 				class="inline-flex items-center px-6 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90"
 			>
 				Next Question
@@ -141,22 +142,34 @@ console.log("experience_level:", Astro.url.searchParams.get('experience_level'))
 </QuizLayout> 
 
 <script>
-	// Form validation and debugging
+	// Improved resources form validation and handling
 	document.addEventListener('DOMContentLoaded', () => {
 		const form = document.getElementById('resourcesForm') as HTMLFormElement;
 		
 		if (form) {
 			form.addEventListener('submit', (e) => {
+				e.preventDefault(); // Prevent default form submission
+				
 				// Get form data
 				const formData = new FormData(form);
 				const name = formData.get('name')?.toString() || '';
 				const email = formData.get('email')?.toString() || '';
 				const resources = formData.getAll('preferred_resources').map(value => value.toString());
 				
+				// Get all hidden fields
+				const interests = formData.getAll('interests').map(value => value.toString());
+				const primaryGoal = formData.get('primary_goal')?.toString() || '';
+				const timeCommitment = formData.get('time_commitment')?.toString() || '';
+				const experienceLevel = formData.get('experience_level')?.toString() || '';
+				
 				// Log submission data
 				console.log('Resources form submission data:');
 				console.log('Name:', name);
 				console.log('Email:', email);
+				console.log('Interests:', interests);
+				console.log('Primary Goal:', primaryGoal);
+				console.log('Time Commitment:', timeCommitment);
+				console.log('Experience Level:', experienceLevel);
 				console.log('Preferred Resources:', resources);
 				
 				// Ensure hidden fields are present
@@ -164,12 +177,31 @@ console.log("experience_level:", Astro.url.searchParams.get('experience_level'))
 					console.error('Missing required hidden fields: name or email');
 				}
 				
-				// Form is valid, continue with submission
-				console.log('Form data passing to next question:', {
-					name,
-					email,
-					resources
+				// Create URL with all parameters properly encoded
+				const url = new URL('/quiz/question/5', window.location.origin);
+				
+				// Add the basic parameters
+				url.searchParams.set('name', name);
+				url.searchParams.set('email', email);
+				url.searchParams.set('primary_goal', primaryGoal);
+				url.searchParams.set('time_commitment', timeCommitment);
+				url.searchParams.set('experience_level', experienceLevel);
+				
+				// Add all interests
+				interests.forEach(interest => {
+					url.searchParams.append('interests', interest);
 				});
+				
+				// Add all preferred resources
+				resources.forEach(resource => {
+					url.searchParams.append('preferred_resources', resource);
+				});
+				
+				// Log the final URL
+				console.log('Navigating to URL:', url.toString());
+				
+				// Navigate to the new URL
+				window.location.href = url.toString();
 			});
 		}
 	});

@@ -12,7 +12,7 @@ console.log("preferred_resources:", Astro.url.searchParams.getAll('preferred_res
 <QuizLayout title="Quiz | Final Question" currentStep={5} totalSteps={5}>
 	<h1 class="text-2xl font-bold text-primary mb-6">Almost done! One last question...</h1>
 	
-	<form action="/quiz/results" method="get" class="space-y-6">
+	<form action="/quiz/results" method="get" class="space-y-6" id="finalForm">
 		<!-- Pass along previous data -->
 		<input type="hidden" name="name" value={Astro.url.searchParams.get('name') || ''} />
 		<input type="hidden" name="email" value={Astro.url.searchParams.get('email') || ''} />
@@ -106,6 +106,7 @@ console.log("preferred_resources:", Astro.url.searchParams.getAll('preferred_res
 			</a>
 			<button 
 				type="submit" 
+				id="finalButton"
 				class="inline-flex items-center px-6 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90"
 			>
 				Get Your Results
@@ -113,3 +114,79 @@ console.log("preferred_resources:", Astro.url.searchParams.getAll('preferred_res
 		</div>
 	</form>
 </QuizLayout> 
+
+<script>
+	// Enhanced form submission for the final step
+	document.addEventListener('DOMContentLoaded', () => {
+		const form = document.getElementById('finalForm') as HTMLFormElement;
+		
+		if (form) {
+			form.addEventListener('submit', (e) => {
+				e.preventDefault(); // Prevent default form submission
+				
+				// Get form data
+				const formData = new FormData(form);
+				
+				// Get all the basic fields
+				const name = formData.get('name')?.toString() || '';
+				const email = formData.get('email')?.toString() || '';
+				const challenges = formData.get('challenges')?.toString() || '';
+				const timeline = formData.get('timeline')?.toString() || '';
+				
+				// Get the arrays
+				const interests = formData.getAll('interests').map(value => value.toString());
+				const preferredResources = formData.getAll('preferred_resources').map(value => value.toString());
+				
+				// Get other fields
+				const primaryGoal = formData.get('primary_goal')?.toString() || '';
+				const timeCommitment = formData.get('time_commitment')?.toString() || '';
+				const experienceLevel = formData.get('experience_level')?.toString() || '';
+				
+				// Log the data for debugging
+				console.log('Final form submission data:');
+				console.log('Name:', name);
+				console.log('Email:', email);
+				console.log('Interests:', interests);
+				console.log('Primary Goal:', primaryGoal);
+				console.log('Time Commitment:', timeCommitment);
+				console.log('Experience Level:', experienceLevel);
+				console.log('Preferred Resources:', preferredResources);
+				console.log('Challenges:', challenges);
+				console.log('Timeline:', timeline);
+				
+				// Validate timeline is selected
+				if (!timeline) {
+					alert('Please select how soon you want to implement solutions');
+					return false;
+				}
+				
+				// Create the results URL with all parameters
+				const url = new URL('/quiz/results', window.location.origin);
+				
+				// Add the basic parameters
+				url.searchParams.set('name', name);
+				url.searchParams.set('email', email);
+				url.searchParams.set('primary_goal', primaryGoal);
+				url.searchParams.set('time_commitment', timeCommitment);
+				url.searchParams.set('experience_level', experienceLevel);
+				url.searchParams.set('challenges', challenges);
+				url.searchParams.set('timeline', timeline);
+				
+				// Add arrays
+				interests.forEach(interest => {
+					url.searchParams.append('interests', interest);
+				});
+				
+				preferredResources.forEach(resource => {
+					url.searchParams.append('preferred_resources', resource);
+				});
+				
+				// Log the final URL
+				console.log('Navigating to results URL:', url.toString());
+				
+				// Navigate to the results page
+				window.location.href = url.toString();
+			});
+		}
+	});
+</script> 
