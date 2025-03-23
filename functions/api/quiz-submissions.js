@@ -29,11 +29,43 @@ export async function onRequest(context) {
     const data = await request.json();
     logs.push(`Received data for: ${data.name || 'Unknown'}, Email: ${data.email || 'None'}`);
     
+    // Validate data and set defaults for required fields
+    if (!data.name) data.name = "Anonymous";
+    if (!data.score) {
+      data.score = parseInt(data.score) || 0;
+      logs.push(`Score was missing or invalid, defaulting to: ${data.score}`);
+    } else {
+      // Ensure score is a number
+      data.score = parseInt(data.score) || 0;
+      logs.push(`Validated score: ${data.score}`);
+    }
+    
+    // Ensure arrays are properly initialized
+    if (!Array.isArray(data.interests)) data.interests = [];
+    if (!Array.isArray(data.preferred_resources)) data.preferred_resources = [];
+    
+    // Ensure string fields exist
+    if (!data.primary_goal) data.primary_goal = "";
+    if (!data.time_commitment) data.time_commitment = "";
+    if (!data.experience_level) data.experience_level = "";
+    if (!data.challenges) data.challenges = "";
+    if (!data.timeline) data.timeline = "";
+    
     // Add timestamp if not provided
     if (!data.timestamp) {
       data.timestamp = new Date().toISOString();
       logs.push(`Added timestamp: ${data.timestamp}`);
     }
+    
+    // Log the validated data object
+    logs.push(`Validated data: ${JSON.stringify({
+      name: data.name,
+      email: data.email,
+      score: data.score,
+      interests: data.interests,
+      primary_goal: data.primary_goal,
+      // Don't log all fields to keep logs concise
+    })}`);
     
     // Generate a unique key for the submission
     const submissionId = crypto.randomUUID();

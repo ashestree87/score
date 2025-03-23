@@ -117,11 +117,24 @@ function generateRecommendations(params: URLSearchParams) {
 	const displayScore = Math.max(70, normalizedScore);
 	
 	// If the score is still 0, there might be an issue with the parameters
-	const fallbackScore = normalizedScore === 0 ? 85 : displayScore;
+	const finalScore = normalizedScore === 0 ? 85 : displayScore;
+	
+	// Add the score to URL params so it's available for the submission API
+	// This ensures the score is consistently available in both page display and API submission
+	if (!params.has('score')) {
+		params.set('score', finalScore.toString());
+		
+		// Update the URL without refreshing the page (just for cleaner links)
+		if (typeof window !== 'undefined') {
+			const url = new URL(window.location.href);
+			url.searchParams.set('score', finalScore.toString());
+			window.history.replaceState({}, '', url.toString());
+		}
+	}
 	
 	return {
 		name,
-		score: fallbackScore,
+		score: finalScore,
 		goalBasedRecs,
 		experienceBasedApproach,
 		timeBasedStrategy
@@ -252,24 +265,51 @@ const recommendations = generateRecommendations(Astro.url.searchParams);
 		
 		// Get form data
 		const params = new URLSearchParams(window.location.search);
+		
+		// Get the score from the document
+		// This gets the actual score displayed on the page rather than relying on URL params
+		let displayScore = 0;
+		const scoreElement = document.querySelector('.text-xs.font-semibold.inline-block.text-primary');
+		if (scoreElement && scoreElement.textContent) {
+			displayScore = parseInt(scoreElement.textContent.replace('%', '')) || 0;
+			logToDebug(`Score from page element: ${displayScore}%`);
+		} else {
+			logToDebug('Warning: Could not find score element on page', true);
+		}
+		
+		// Log all URL parameters for debugging
+		logToDebug('All URL parameters:');
+		params.forEach((value, key) => {
+			logToDebug(`${key}: ${value}`);
+		});
+		
+		// Build quiz data with proper validation and defaults
 		const quizData = {
-			name: params.get('name'),
-			email: params.get('email'),
-			interests: params.getAll('interests'),
-			primary_goal: params.get('primary_goal'),
-			time_commitment: params.get('time_commitment'),
-			experience_level: params.get('experience_level'),
-			preferred_resources: params.getAll('preferred_resources'),
-			challenges: params.get('challenges'),
-			timeline: params.get('timeline'),
-			score: parseInt(params.get('score') || '0'),
+			name: params.get('name') || 'Anonymous',
+			email: params.get('email') || '',
+			interests: params.getAll('interests') || [],
+			primary_goal: params.get('primary_goal') || '',
+			time_commitment: params.get('time_commitment') || '',
+			experience_level: params.get('experience_level') || '',
+			preferred_resources: params.getAll('preferred_resources') || [],
+			challenges: params.get('challenges') || '',
+			timeline: params.get('timeline') || '',
+			// Use the score from the page element, fallback to URL param, fallback to default
+			score: displayScore || parseInt(params.get('score') || '0'),
 			timestamp: new Date().toISOString()
 		};
 		
 		// Log the data being sent
-		logToDebug(`Submitting data for: ${quizData.name || 'Anonymous'}`);
+		logToDebug(`Submitting data for: ${quizData.name}`);
 		logToDebug(`Email: ${quizData.email || 'Not provided'}`);
 		logToDebug(`Score: ${quizData.score}`);
+		logToDebug(`Primary Goal: ${quizData.primary_goal}`);
+		logToDebug(`Time Commitment: ${quizData.time_commitment}`);
+		logToDebug(`Experience Level: ${quizData.experience_level}`);
+		logToDebug(`Timeline: ${quizData.timeline}`);
+		logToDebug(`Challenges: ${quizData.challenges}`);
+		logToDebug(`Interests: ${quizData.interests.join(', ')}`);
+		logToDebug(`Preferred Resources: ${quizData.preferred_resources.join(', ')}`);
 		
 		// Submit data to API endpoint
 		fetch('/api/quiz-submissions', {
