@@ -1,0 +1,37 @@
+---
+import Layout from './Layout.astro';
+
+interface Props {
+	title: string;
+	currentStep: number;
+	totalSteps: number;
+	description?: string;
+}
+
+const { title, currentStep, totalSteps, description } = Astro.props;
+const progress = (currentStep / totalSteps) * 100;
+---
+
+<Layout title={title} description={description}>
+	<main class="container mx-auto px-4 py-8 max-w-3xl">
+		<div class="mb-6">
+			<div class="flex justify-between text-sm text-gray-600 mb-2">
+				<span>Question {currentStep} of {totalSteps}</span>
+				<span>{Math.round(progress)}% Complete</span>
+			</div>
+			<div class="w-full bg-gray-200 rounded-full h-2.5">
+				<div class="bg-primary h-2.5 rounded-full" style={`width: ${progress}%`}></div>
+			</div>
+		</div>
+
+		<div class="bg-white rounded-lg shadow-md p-8">
+			<slot />
+		</div>
+		
+		<div class="text-center mt-8">
+			<a href="/" class="text-primary hover:underline">
+				Exit Quiz
+			</a>
+		</div>
+	</main>
+</Layout> 

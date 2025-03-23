@@ -1,0 +1,99 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Quiz | Get Started">
+	<main class="container mx-auto px-4 py-8 max-w-4xl">
+		<header class="text-center mb-10">
+			<h1 class="text-3xl font-bold text-primary mb-4">Let's Get Started</h1>
+			<p class="text-lg max-w-2xl mx-auto">
+				Answer a few questions to help us understand your needs better.
+			</p>
+		</header>
+
+		<div class="bg-white rounded-lg shadow-md p-8 mb-12">
+			<form action="/quiz/question/1" method="get" class="space-y-6">
+				<div>
+					<label for="name" class="block text-sm font-medium text-gray-700 mb-1">
+						Your Name
+					</label>
+					<input 
+						type="text" 
+						id="name" 
+						name="name" 
+						required
+						class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+						placeholder="Enter your name"
+					/>
+				</div>
+				
+				<div>
+					<label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+						Email Address
+					</label>
+					<input 
+						type="email" 
+						id="email" 
+						name="email" 
+						required
+						class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+						placeholder="you@example.com"
+					/>
+					<p class="mt-1 text-sm text-gray-500">
+						We'll send your results to this email. We won't share it with anyone else.
+					</p>
+				</div>
+				
+				<div>
+					<label class="block text-sm font-medium text-gray-700 mb-3">
+						I'm interested in:
+					</label>
+					<div class="space-y-2">
+						<label class="flex items-center">
+							<input 
+								type="checkbox" 
+								name="interests" 
+								value="personal" 
+								class="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
+							/>
+							<span class="ml-2">Personal Development</span>
+						</label>
+						<label class="flex items-center">
+							<input 
+								type="checkbox" 
+								name="interests" 
+								value="professional" 
+								class="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
+							/>
+							<span class="ml-2">Professional Growth</span>
+						</label>
+						<label class="flex items-center">
+							<input 
+								type="checkbox" 
+								name="interests" 
+								value="business" 
+								class="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
+							/>
+							<span class="ml-2">Business Solutions</span>
+						</label>
+					</div>
+				</div>
+				
+				<div class="pt-4">
+					<button 
+						type="submit" 
+						class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-md transition-colors"
+					>
+						Start Quiz
+					</button>
+				</div>
+			</form>
+		</div>
+		
+		<div class="text-center">
+			<a href="/" class="text-primary hover:underline">
+				&larr; Back to Home
+			</a>
+		</div>
+	</main>
+</Layout> 

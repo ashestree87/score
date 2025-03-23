@@ -1,0 +1,50 @@
+---
+import Layout from '../layouts/Layout.astro';
+import QuizWidget from '../components/QuizWidget.jsx';
+---
+
+<Layout title="Quiz Widget | Embed" description="Embeddable quiz widget for your website">
+  <main class="container mx-auto px-4 py-8 flex flex-col items-center">
+    <div class="w-full max-w-2xl">
+      <h1 class="text-3xl font-bold text-primary mb-6 text-center">Quiz Widget Preview</h1>
+      
+      <QuizWidget client:load />
+      
+      <div class="mt-12 bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-bold mb-4">Embed This Quiz On Your Website</h2>
+        <p class="mb-4">
+          Copy the code below to embed this quiz on your website:
+        </p>
+        
+        <div class="bg-gray-50 p-4 rounded-md">
+          <pre class="text-sm overflow-x-auto"><code>&lt;iframe 
+  src="https://your-domain.com/widget" 
+  width="100%" 
+  height="600" 
+  frameborder="0" 
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope" 
+  allowfullscreen
+&gt;&lt;/iframe&gt;</code></pre>
+        </div>
+        
+        <div class="mt-6">
+          <h3 class="text-lg font-bold mb-2">Instructions:</h3>
+          <ol class="list-decimal pl-5 space-y-2">
+            <li>Copy the iframe code above</li>
+            <li>Paste it into your website's HTML where you want the quiz to appear</li>
+            <li>Replace "https://your-domain.com/widget" with the actual URL of this quiz</li>
+            <li>Adjust the width and height as needed to fit your website's layout</li>
+          </ol>
+        </div>
+        
+        <div class="mt-6 border-t pt-4">
+          <h3 class="text-lg font-bold mb-2">Customization Options:</h3>
+          <p>
+            For advanced customization options or to use our JavaScript SDK instead of an iframe, please 
+            <a href="/contact" class="text-primary hover:underline">contact us</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout> 

@@ -1,0 +1,132 @@
+---
+import QuizLayout from '../../../layouts/QuizLayout.astro';
+---
+
+<QuizLayout title="Quiz | Question 4" currentStep={4} totalSteps={5}>
+	<h1 class="text-2xl font-bold text-primary mb-6">What resources do you prefer?</h1>
+	
+	<form action="/quiz/question/5" method="get" class="space-y-6">
+		<!-- Pass along previous data -->
+		<input type="hidden" name="name" value={Astro.url.searchParams.get('name') || ''} />
+		<input type="hidden" name="email" value={Astro.url.searchParams.get('email') || ''} />
+		
+		{Astro.url.searchParams.getAll('interests').map(interest => (
+			<input type="hidden" name="interests" value={interest} />
+		))}
+		
+		<input type="hidden" name="primary_goal" value={Astro.url.searchParams.get('primary_goal') || ''} />
+		<input type="hidden" name="time_commitment" value={Astro.url.searchParams.get('time_commitment') || ''} />
+		<input type="hidden" name="experience_level" value={Astro.url.searchParams.get('experience_level') || ''} />
+
+		<div class="space-y-3">
+			<p class="text-sm text-gray-600 mb-2">
+				Select all resource types that you'd find most helpful (choose as many as apply):
+			</p>
+			
+			<label class="flex items-start p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+				<input 
+					type="checkbox" 
+					name="preferred_resources" 
+					value="video_courses" 
+					class="h-4 w-4 mt-1 text-primary"
+				/>
+				<div class="ml-3">
+					<span class="font-medium">Video Courses and Tutorials</span>
+					<p class="text-sm text-gray-600">
+						Structured video content with step-by-step instructions
+					</p>
+				</div>
+			</label>
+			
+			<label class="flex items-start p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+				<input 
+					type="checkbox" 
+					name="preferred_resources" 
+					value="articles_guides" 
+					class="h-4 w-4 mt-1 text-primary"
+				/>
+				<div class="ml-3">
+					<span class="font-medium">Articles and Written Guides</span>
+					<p class="text-sm text-gray-600">
+						In-depth articles, blog posts, and text-based learning materials
+					</p>
+				</div>
+			</label>
+			
+			<label class="flex items-start p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+				<input 
+					type="checkbox" 
+					name="preferred_resources" 
+					value="interactive_tools" 
+					class="h-4 w-4 mt-1 text-primary"
+				/>
+				<div class="ml-3">
+					<span class="font-medium">Interactive Tools and Calculators</span>
+					<p class="text-sm text-gray-600">
+						Hands-on tools that help you implement and track progress
+					</p>
+				</div>
+			</label>
+			
+			<label class="flex items-start p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+				<input 
+					type="checkbox" 
+					name="preferred_resources" 
+					value="templates_worksheets" 
+					class="h-4 w-4 mt-1 text-primary"
+				/>
+				<div class="ml-3">
+					<span class="font-medium">Templates and Worksheets</span>
+					<p class="text-sm text-gray-600">
+						Ready-to-use documents that provide structure and guidance
+					</p>
+				</div>
+			</label>
+			
+			<label class="flex items-start p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+				<input 
+					type="checkbox" 
+					name="preferred_resources" 
+					value="community_forums" 
+					class="h-4 w-4 mt-1 text-primary"
+				/>
+				<div class="ml-3">
+					<span class="font-medium">Community Forums and Discussion Groups</span>
+					<p class="text-sm text-gray-600">
+						Places to connect with others and share experiences
+					</p>
+				</div>
+			</label>
+			
+			<label class="flex items-start p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+				<input 
+					type="checkbox" 
+					name="preferred_resources" 
+					value="personal_coaching" 
+					class="h-4 w-4 mt-1 text-primary"
+				/>
+				<div class="ml-3">
+					<span class="font-medium">Personal Coaching or Consultation</span>
+					<p class="text-sm text-gray-600">
+						One-on-one guidance tailored to your specific situation
+					</p>
+				</div>
+			</label>
+		</div>
+		
+		<div class="pt-4 flex justify-between">
+			<a 
+				href={`/quiz/question/3?${new URLSearchParams(Astro.url.searchParams)}`}
+				class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+			>
+				Previous
+			</a>
+			<button 
+				type="submit" 
+				class="inline-flex items-center px-6 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90"
+			>
+				Next Question
+			</button>
+		</div>
+	</form>
+</QuizLayout> 

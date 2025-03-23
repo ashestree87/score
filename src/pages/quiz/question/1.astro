@@ -1,0 +1,90 @@
+---
+import QuizLayout from '../../../layouts/QuizLayout.astro';
+---
+
+<QuizLayout title="Quiz | Question 1" currentStep={1} totalSteps={5}>
+	<h1 class="text-2xl font-bold text-primary mb-6">What's your primary goal?</h1>
+	
+	<form action="/quiz/question/2" method="get" class="space-y-6">
+		<!-- Pass along previous data -->
+		<input type="hidden" name="name" value={Astro.url.searchParams.get('name') || ''} />
+		<input type="hidden" name="email" value={Astro.url.searchParams.get('email') || ''} />
+		
+		{Astro.url.searchParams.getAll('interests').map(interest => (
+			<input type="hidden" name="interests" value={interest} />
+		))}
+
+		<div class="space-y-4">
+			<label class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+				<input 
+					type="radio" 
+					name="primary_goal" 
+					value="increase_productivity" 
+					class="h-4 w-4 text-primary"
+					required
+				/>
+				<span class="ml-2 font-medium">Increase productivity and efficiency</span>
+				<p class="mt-1 ml-6 text-sm text-gray-600">
+					I want to accomplish more in less time and streamline my workflows.
+				</p>
+			</label>
+			
+			<label class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+				<input 
+					type="radio" 
+					name="primary_goal" 
+					value="improve_skills" 
+					class="h-4 w-4 text-primary"
+					required
+				/>
+				<span class="ml-2 font-medium">Improve specific skills or knowledge</span>
+				<p class="mt-1 ml-6 text-sm text-gray-600">
+					I want to develop expertise in particular areas relevant to my work or personal interests.
+				</p>
+			</label>
+			
+			<label class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+				<input 
+					type="radio" 
+					name="primary_goal" 
+					value="overcome_challenges" 
+					class="h-4 w-4 text-primary"
+					required
+				/>
+				<span class="ml-2 font-medium">Overcome specific challenges or obstacles</span>
+				<p class="mt-1 ml-6 text-sm text-gray-600">
+					I'm facing particular issues that I need help resolving effectively.
+				</p>
+			</label>
+			
+			<label class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+				<input 
+					type="radio" 
+					name="primary_goal" 
+					value="explore_options" 
+					class="h-4 w-4 text-primary"
+					required
+				/>
+				<span class="ml-2 font-medium">Explore available options or opportunities</span>
+				<p class="mt-1 ml-6 text-sm text-gray-600">
+					I'm not sure exactly what I need yet and want to discover what's possible.
+				</p>
+			</label>
+		</div>
+		
+		<div class="pt-4 flex justify-between">
+			<a 
+				href="/quiz/start" 
+				class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+			>
+				Previous
+			</a>
+			<button 
+				type="submit" 
+				class="inline-flex items-center px-6 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90"
+			>
+				Next Question
+			</button>
+		</div>
+	</form>
+</QuizLayout> 

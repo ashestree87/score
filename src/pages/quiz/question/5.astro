@@ -1,0 +1,108 @@
+---
+import QuizLayout from '../../../layouts/QuizLayout.astro';
+---
+
+<QuizLayout title="Quiz | Final Question" currentStep={5} totalSteps={5}>
+	<h1 class="text-2xl font-bold text-primary mb-6">Almost done! One last question...</h1>
+	
+	<form action="/quiz/results" method="get" class="space-y-6">
+		<!-- Pass along previous data -->
+		<input type="hidden" name="name" value={Astro.url.searchParams.get('name') || ''} />
+		<input type="hidden" name="email" value={Astro.url.searchParams.get('email') || ''} />
+		
+		{Astro.url.searchParams.getAll('interests').map(interest => (
+			<input type="hidden" name="interests" value={interest} />
+		))}
+		
+		<input type="hidden" name="primary_goal" value={Astro.url.searchParams.get('primary_goal') || ''} />
+		<input type="hidden" name="time_commitment" value={Astro.url.searchParams.get('time_commitment') || ''} />
+		<input type="hidden" name="experience_level" value={Astro.url.searchParams.get('experience_level') || ''} />
+		
+		{Astro.url.searchParams.getAll('preferred_resources').map(resource => (
+			<input type="hidden" name="preferred_resources" value={resource} />
+		))}
+
+		<div>
+			<label for="challenges" class="block text-lg font-medium text-gray-900 mb-3">
+				What specific challenges or obstacles are you facing right now?
+			</label>
+			<textarea 
+				id="challenges" 
+				name="challenges" 
+				rows="5" 
+				class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+				placeholder="Please describe any specific issues you're dealing with that you'd like help addressing..."
+			></textarea>
+			<p class="mt-2 text-sm text-gray-500">
+				This helps us tailor our recommendations to your unique situation.
+			</p>
+		</div>
+		
+		<div>
+			<label class="block text-lg font-medium text-gray-900 mb-3">
+				How soon do you want to implement solutions?
+			</label>
+			
+			<div class="space-y-3">
+				<label class="flex items-center">
+					<input 
+						type="radio" 
+						name="timeline" 
+						value="immediately" 
+						class="h-4 w-4 text-primary"
+						required
+					/>
+					<span class="ml-2">Immediately (within days)</span>
+				</label>
+				
+				<label class="flex items-center">
+					<input 
+						type="radio" 
+						name="timeline" 
+						value="soon" 
+						class="h-4 w-4 text-primary"
+						required
+					/>
+					<span class="ml-2">Soon (within weeks)</span>
+				</label>
+				
+				<label class="flex items-center">
+					<input 
+						type="radio" 
+						name="timeline" 
+						value="gradually" 
+						class="h-4 w-4 text-primary"
+						required
+					/>
+					<span class="ml-2">Gradually (over months)</span>
+				</label>
+				
+				<label class="flex items-center">
+					<input 
+						type="radio" 
+						name="timeline" 
+						value="planning" 
+						class="h-4 w-4 text-primary"
+						required
+					/>
+					<span class="ml-2">Just planning for the future</span>
+				</label>
+			</div>
+		</div>
+		
+		<div class="pt-4 flex justify-between">
+			<a 
+				href={`/quiz/question/4?${new URLSearchParams(Astro.url.searchParams)}`}
+				class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+			>
+				Previous
+			</a>
+			<button 
+				type="submit" 
+				class="inline-flex items-center px-6 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90"
+			>
+				Get Your Results
+			</button>
+		</div>
+	</form>
+</QuizLayout> 

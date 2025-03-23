@@ -1,0 +1,81 @@
+---
+const navItems = [
+  { name: 'Home', href: '/' },
+  { name: 'Quiz', href: '/quiz/start' },
+  { name: 'Contact', href: '/contact' },
+  { name: 'Embed', href: '/embed' }
+];
+
+// Get current path for active link highlighting
+const currentPath = Astro.url.pathname;
+---
+
+<header class="bg-white shadow-sm">
+  <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+    <a href="/" class="text-primary font-bold text-xl flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+      </svg>
+      Quiz Funnel
+    </a>
+    
+    <nav class="hidden md:flex items-center space-x-6">
+      {navItems.map(item => (
+        <a 
+          href={item.href}
+          class={`text-sm font-medium ${currentPath === item.href ? 'text-primary' : 'text-gray-600 hover:text-primary'}`}
+        >
+          {item.name}
+        </a>
+      ))}
+      
+      <a 
+        href="/quiz/start" 
+        class="ml-2 px-4 py-2 bg-primary text-white rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
+      >
+        Take Quiz
+      </a>
+    </nav>
+    
+    <button class="md:hidden text-gray-600 hover:text-primary" id="mobile-menu-button">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
+  </div>
+  
+  <!-- Mobile menu, hidden by default -->
+  <div class="md:hidden hidden" id="mobile-menu">
+    <div class="px-2 pt-2 pb-3 space-y-1 border-t">
+      {navItems.map(item => (
+        <a 
+          href={item.href}
+          class={`block px-3 py-2 rounded-md text-base font-medium ${currentPath === item.href ? 'text-primary bg-primary/5' : 'text-gray-600 hover:bg-gray-50 hover:text-primary'}`}
+        >
+          {item.name}
+        </a>
+      ))}
+      
+      <a 
+        href="/quiz/start" 
+        class="block px-3 py-2 bg-primary text-white rounded-md text-base font-medium hover:bg-primary/90 transition-colors mt-2"
+      >
+        Take Quiz
+      </a>
+    </div>
+  </div>
+</header>
+
+<script>
+  // Toggle mobile menu
+  document.addEventListener('DOMContentLoaded', () => {
+    const menuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    
+    if (menuButton && mobileMenu) {
+      menuButton.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+      });
+    }
+  });
+</script> 

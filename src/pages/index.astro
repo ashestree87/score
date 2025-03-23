@@ -1,11 +1,74 @@
 ---
-import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
 
 // Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
 // Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
 ---
 
-<Layout>
-	<Welcome />
+<Layout title="Quiz Funnel | Home">
+	<main class="container mx-auto px-4 py-8 max-w-4xl">
+		<header class="text-center mb-12">
+			<h1 class="text-4xl font-bold text-primary mb-4">Discover Your Perfect Solution</h1>
+			<p class="text-lg max-w-2xl mx-auto">
+				Take our quick assessment to receive personalized recommendations tailored to your specific needs.
+			</p>
+		</header>
+
+		<div class="bg-white rounded-lg shadow-md p-8 mb-12">
+			<div class="flex flex-col md:flex-row items-center gap-8">
+				<div class="flex-1">
+					<h2 class="text-2xl font-bold mb-4">Why Take Our Quiz?</h2>
+					<ul class="space-y-3">
+						<li class="flex items-start">
+							<span class="text-primary mr-2">✓</span>
+							<span>Get personalized recommendations in under 2 minutes</span>
+						</li>
+						<li class="flex items-start">
+							<span class="text-primary mr-2">✓</span>
+							<span>Discover solutions you might have overlooked</span>
+						</li>
+						<li class="flex items-start">
+							<span class="text-primary mr-2">✓</span>
+							<span>Receive a custom action plan based on your responses</span>
+						</li>
+					</ul>
+				</div>
+				<div class="flex-1">
+					<img 
+						src="https://placehold.co/400x300/4F46E5/FFFFFF?text=Quiz+Image" 
+						alt="Quiz illustration" 
+						class="rounded-lg w-full"
+					/>
+				</div>
+			</div>
+			
+			<div class="mt-8 text-center">
+				<a href="/quiz/start" class="inline-block bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-full transition-colors">
+					Start Quiz Now
+				</a>
+			</div>
+		</div>
+
+		<section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+			<div class="bg-white p-6 rounded-lg shadow-sm">
+				<div class="text-accent text-2xl mb-2">1</div>
+				<h3 class="font-bold text-xl mb-2">Take the Quiz</h3>
+				<p>Answer a few simple questions about your needs and preferences.</p>
+			</div>
+			<div class="bg-white p-6 rounded-lg shadow-sm">
+				<div class="text-accent text-2xl mb-2">2</div>
+				<h3 class="font-bold text-xl mb-2">Get Your Results</h3>
+				<p>Receive an instant analysis based on your unique situation.</p>
+			</div>
+			<div class="bg-white p-6 rounded-lg shadow-sm">
+				<div class="text-accent text-2xl mb-2">3</div>
+				<h3 class="font-bold text-xl mb-2">Take Action</h3>
+				<p>Follow your personalized recommendations for optimal results.</p>
+			</div>
+		</section>
+
+		<footer class="text-center text-sm text-gray-500">
+			<p>&copy; {new Date().getFullYear()} Quiz Funnel. All rights reserved.</p>
+		</footer>
+	</main>
 </Layout>

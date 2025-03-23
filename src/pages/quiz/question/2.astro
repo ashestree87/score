@@ -1,0 +1,92 @@
+---
+import QuizLayout from '../../../layouts/QuizLayout.astro';
+---
+
+<QuizLayout title="Quiz | Question 2" currentStep={2} totalSteps={5}>
+	<h1 class="text-2xl font-bold text-primary mb-6">How much time can you dedicate?</h1>
+	
+	<form action="/quiz/question/3" method="get" class="space-y-6">
+		<!-- Pass along previous data -->
+		<input type="hidden" name="name" value={Astro.url.searchParams.get('name') || ''} />
+		<input type="hidden" name="email" value={Astro.url.searchParams.get('email') || ''} />
+		
+		{Astro.url.searchParams.getAll('interests').map(interest => (
+			<input type="hidden" name="interests" value={interest} />
+		))}
+		
+		<input type="hidden" name="primary_goal" value={Astro.url.searchParams.get('primary_goal') || ''} />
+
+		<div class="space-y-4">
+			<label class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+				<input 
+					type="radio" 
+					name="time_commitment" 
+					value="minimal" 
+					class="h-4 w-4 text-primary"
+					required
+				/>
+				<span class="ml-2 font-medium">Minimal (0-2 hours per week)</span>
+				<p class="mt-1 ml-6 text-sm text-gray-600">
+					I have very limited time available and need solutions that fit into a busy schedule.
+				</p>
+			</label>
+			
+			<label class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+				<input 
+					type="radio" 
+					name="time_commitment" 
+					value="moderate" 
+					class="h-4 w-4 text-primary"
+					required
+				/>
+				<span class="ml-2 font-medium">Moderate (3-5 hours per week)</span>
+				<p class="mt-1 ml-6 text-sm text-gray-600">
+					I can dedicate a reasonable amount of time to working on my goals.
+				</p>
+			</label>
+			
+			<label class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+				<input 
+					type="radio" 
+					name="time_commitment" 
+					value="significant" 
+					class="h-4 w-4 text-primary"
+					required
+				/>
+				<span class="ml-2 font-medium">Significant (6-10 hours per week)</span>
+				<p class="mt-1 ml-6 text-sm text-gray-600">
+					I'm willing to invest substantial time to achieve better results.
+				</p>
+			</label>
+			
+			<label class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+				<input 
+					type="radio" 
+					name="time_commitment" 
+					value="extensive" 
+					class="h-4 w-4 text-primary"
+					required
+				/>
+				<span class="ml-2 font-medium">Extensive (10+ hours per week)</span>
+				<p class="mt-1 ml-6 text-sm text-gray-600">
+					I'm fully committed and can dedicate significant time to my objectives.
+				</p>
+			</label>
+		</div>
+		
+		<div class="pt-4 flex justify-between">
+			<a 
+				href={`/quiz/question/1?${new URLSearchParams(Astro.url.searchParams)}`}
+				class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+			>
+				Previous
+			</a>
+			<button 
+				type="submit" 
+				class="inline-flex items-center px-6 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90"
+			>
+				Next Question
+			</button>
+		</div>
+	</form>
+</QuizLayout> 
