@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  wrangler:
+    image: node:18
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: >
+      bash -c "npm install -g wrangler@4 && 
+               wrangler pages dev dist --binding API_KEY=test_key_local"
+    ports:
+      - "8788:8788"  # Default Wrangler port
+    environment:
+      - NODE_ENV=development 

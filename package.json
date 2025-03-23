@@ -6,7 +6,9 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "dev:cf": "npm run build && miniflare --kv SCORES_KV --env API_KEY=test_key_local --d1 DB=score_database --site dist",
+    "init-db": "node scripts/init-db.js"
   },
   "dependencies": {
     "@astrojs/react": "^3.1.0",
@@ -15,5 +17,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tailwindcss": "^3.4.1"
+  },
+  "devDependencies": {
+    "miniflare": "^3.20250310.1"
   }
 }
