@@ -1,12 +1,5 @@
 ---
 import QuizLayout from '../../../layouts/QuizLayout.astro';
-
-// Debug info
-console.log("Question 5 - URL Parameters:");
-console.log("name:", Astro.url.searchParams.get('name'));
-console.log("email:", Astro.url.searchParams.get('email'));
-console.log("interests:", Astro.url.searchParams.getAll('interests'));
-console.log("preferred_resources:", Astro.url.searchParams.getAll('preferred_resources'));
 ---
 
 <QuizLayout title="Quiz | Final Question" currentStep={5} totalSteps={5}>
@@ -99,7 +92,7 @@ console.log("preferred_resources:", Astro.url.searchParams.getAll('preferred_res
 		
 		<div class="pt-4 flex justify-between">
 			<a 
-				href={`/quiz/question/4?${new URLSearchParams(Astro.url.searchParams)}`}
+				href={`/quiz/question/4?name=${Astro.url.searchParams.get('name') || ''}&email=${Astro.url.searchParams.get('email') || ''}`}
 				class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
 			>
 				Previous
@@ -116,6 +109,22 @@ console.log("preferred_resources:", Astro.url.searchParams.getAll('preferred_res
 </QuizLayout> 
 
 <script>
+	// Define interface for quiz data
+	interface QuizData {
+		name?: string;
+		email?: string;
+		interests?: string[];
+		primary_goal?: string;
+		time_commitment?: string;
+		experience_level?: string;
+		preferred_resources?: string[];
+		timeline?: string;
+		challenges?: string;
+		completed_at?: string;
+		score?: number;
+		[key: string]: any;
+	}
+	
 	// Using localStorage for reliable data persistence
 	document.addEventListener('DOMContentLoaded', () => {
 		const form = document.getElementById('finalForm') as HTMLFormElement;
@@ -124,8 +133,7 @@ console.log("preferred_resources:", Astro.url.searchParams.getAll('preferred_res
 		try {
 			const storedData = localStorage.getItem('quizData');
 			if (storedData) {
-				const quizData = JSON.parse(storedData);
-				console.log('Loaded quiz data from localStorage:', quizData);
+				const quizData: QuizData = JSON.parse(storedData);
 				
 				// Pre-fill hidden fields from localStorage data
 				const nameField = document.querySelector('input[name="name"]') as HTMLInputElement;
@@ -134,14 +142,15 @@ console.log("preferred_resources:", Astro.url.searchParams.getAll('preferred_res
 				if (nameField && quizData.name) nameField.value = quizData.name;
 				if (emailField && quizData.email) emailField.value = quizData.email;
 				
-				// Log the pre-filled data
-				console.log('Pre-filled form data from localStorage:');
-				console.log('Name:', nameField?.value);
-				console.log('Email:', emailField?.value);
-				console.log('Interest count:', quizData.interests?.length || 0);
-				console.log('Resources count:', quizData.preferred_resources?.length || 0);
-			} else {
-				console.warn('No quiz data found in localStorage');
+				// Pre-fill challenges field if it exists
+				const challengesField = document.getElementById('challenges') as HTMLTextAreaElement;
+				if (challengesField && quizData.challenges) challengesField.value = quizData.challenges;
+				
+				// Pre-select timeline if it exists
+				if (quizData.timeline) {
+					const timelineInput = document.querySelector(`input[name="timeline"][value="${quizData.timeline}"]`) as HTMLInputElement;
+					if (timelineInput) timelineInput.checked = true;
+				}
 			}
 		} catch (error) {
 			console.error('Error loading quiz data from localStorage:', error);
@@ -165,7 +174,7 @@ console.log("preferred_resources:", Astro.url.searchParams.getAll('preferred_res
 				// Load existing data, update it with new values
 				try {
 					const storedData = localStorage.getItem('quizData');
-					let quizData = storedData ? JSON.parse(storedData) : {};
+					let quizData: QuizData = storedData ? JSON.parse(storedData) : {};
 					
 					// Update with new information
 					quizData = {
@@ -177,7 +186,6 @@ console.log("preferred_resources:", Astro.url.searchParams.getAll('preferred_res
 					
 					// Save updated data
 					localStorage.setItem('quizData', JSON.stringify(quizData));
-					console.log('Final quiz data in localStorage:', quizData);
 					
 					// Create the results URL
 					const url = new URL('/quiz/results', window.location.origin);
@@ -194,9 +202,6 @@ console.log("preferred_resources:", Astro.url.searchParams.getAll('preferred_res
 							url.searchParams.set(key, value.toString());
 						}
 					});
-					
-					// Log the final URL
-					console.log('Navigating to results URL:', url.toString());
 					
 					// Navigate to the results page with all data
 					window.location.href = url.toString();

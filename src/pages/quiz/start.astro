@@ -1,11 +1,5 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-
-// For debugging form field names
-console.log("Start Page Form Field Names:");
-console.log("email field: 'email'");
-console.log("name field: 'name'");
-console.log("interests field: 'interests' (checkbox)");
 ---
 
 <Layout title="Quiz | Get Started">
@@ -106,6 +100,15 @@ console.log("interests field: 'interests' (checkbox)");
 </Layout>
 
 <script>
+	// Define interface for quiz data
+	interface QuizData {
+		name: string;
+		email: string;
+		interests: string[];
+		timestamp: string;
+		[key: string]: any;
+	}
+	
 	// Using localStorage to reliably store quiz data
 	document.addEventListener('DOMContentLoaded', () => {
 		const form = document.getElementById('startForm') as HTMLFormElement;
@@ -123,12 +126,6 @@ console.log("interests field: 'interests' (checkbox)");
 				const name = formData.get('name')?.toString() || '';
 				const interests = formData.getAll('interests').map(value => value.toString());
 				
-				// Log submission data
-				console.log('Form submission data:');
-				console.log('Name:', name);
-				console.log('Email:', email);
-				console.log('Interests:', interests);
-				
 				// Validate email
 				if (!email || !email.includes('@')) {
 					alert('Please enter a valid email address');
@@ -142,7 +139,7 @@ console.log("interests field: 'interests' (checkbox)");
 				}
 				
 				// Store data in localStorage
-				const quizData = {
+				const quizData: QuizData = {
 					name,
 					email,
 					interests,
@@ -151,7 +148,6 @@ console.log("interests field: 'interests' (checkbox)");
 				
 				// Save to localStorage
 				localStorage.setItem('quizData', JSON.stringify(quizData));
-				console.log('Quiz data saved to localStorage:', quizData);
 				
 				// Add basic params to URL just for visibility
 				const url = new URL('/quiz/question/1', window.location.origin);

@@ -1,17 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 
-/**
- * DEBUGGED VERSION
- * This file has been updated to ensure quiz submissions work properly.
- * Main improvements:
- * 1. Added fallback values for required fields (name, email)
- * 2. Enhanced validation for API submissions
- * 3. Added automatic debug mode when required fields are missing
- * 4. Improved test submission to include current form data 
- * 5. Added field validation logging
- */
-
 // Helper function to generate personalized content based on quiz answers
 function generateRecommendations(params: URLSearchParams) {
 	const name = params.get('name') || 'there';
@@ -22,18 +11,6 @@ function generateRecommendations(params: URLSearchParams) {
 	const interests = params.getAll('interests') || [];
 	const resources = params.getAll('preferred_resources') || [];
 	const timeline = params.get('timeline') || '';
-	
-	// For debugging - log all input values
-	console.log('Quiz inputs:', {
-		name,
-		email,
-		interests,
-		primaryGoal,
-		timeCommitment,
-		experienceLevel,
-		resources,
-		timeline
-	});
 	
 	// Goal-based recommendations
 	let goalBasedRecs: string[] = [];
@@ -135,12 +112,8 @@ function generateRecommendations(params: URLSearchParams) {
 	// Each preferred resource adds points
 	score += resources.length * 3;
 	
-	// For debugging - log score calculation
-	console.log('Score before normalization:', score);
-	
 	// Normalize score to a 0-100 scale
 	const normalizedScore = Math.min(100, Math.max(0, score));
-	console.log('Final normalized score:', normalizedScore);
 	
 	// Set a minimum score of 70 to avoid showing a very low score
 	const displayScore = Math.max(70, normalizedScore);
@@ -296,7 +269,6 @@ const recommendations = generateRecommendations(Astro.url.searchParams);
 		if (storedData) {
 			try {
 				storedQuizData = JSON.parse(storedData);
-				console.log('Loaded quiz data from localStorage:', storedQuizData);
 			} catch (error) {
 				console.error('Error parsing localStorage data:', error);
 			}
@@ -313,8 +285,6 @@ const recommendations = generateRecommendations(Astro.url.searchParams);
 		
 		// If we're missing data in the URL but have it in localStorage, construct a new URL
 		if ((missingName || missingEmail || missingInterests || missingResources) && Object.keys(storedQuizData).length > 0) {
-			console.log('Missing data in URL, using localStorage data to rebuild parameters');
-			
 			// Create a new URL with all localStorage data
 			const newUrl = new URL(window.location.pathname, window.location.origin);
 			
@@ -336,213 +306,31 @@ const recommendations = generateRecommendations(Astro.url.searchParams);
 			
 			// Reload the URL parameters after updating
 			urlParams = new URLSearchParams(window.location.search);
-			console.log('Updated URL parameters from localStorage');
 		}
 		
-		// Enable debug mode if any required fields are missing or debug is explicitly requested
-		const isDebugMode = urlParams.has('debug') || missingName || missingEmail || missingInterests || missingResources;
-		
-		// Create a debug section on the page
-		const debugSection = document.createElement('div');
-		debugSection.id = 'api-debug';
-		debugSection.style.display = isDebugMode ? 'block' : 'none';
-		debugSection.style.margin = '20px auto';
-		debugSection.style.maxWidth = '800px';
-		debugSection.style.padding = '15px';
-		debugSection.style.border = '1px solid #ccc';
-		debugSection.style.borderRadius = '5px';
-		debugSection.style.backgroundColor = '#f8f8f8';
-		debugSection.style.fontFamily = 'monospace';
-		debugSection.style.whiteSpace = 'pre-wrap';
-		debugSection.style.fontSize = '14px';
-		
-		// Create header with debug status
-		let headerContent = '<h3>API Debug Information</h3>';
-		if (missingName) headerContent += '<p style="color:red">WARNING: name parameter is missing!</p>';
-		if (missingEmail) headerContent += '<p style="color:red">WARNING: email parameter is missing!</p>';
-		if (missingInterests) headerContent += '<p style="color:orange">NOTE: No interests were selected</p>';
-		if (missingResources) headerContent += '<p style="color:orange">NOTE: No preferred resources were selected</p>';
-		headerContent += '<p>Submitting quiz data...</p>';
-		
-		// Add a section for the raw URL parameters
-		headerContent += '<div style="margin-top: 10px; padding: 10px; background-color: #e0e0e0; border-radius: 4px;">';
-		headerContent += '<h4>Raw URL Parameters</h4>';
-		headerContent += '<pre style="font-size: 12px; overflow-x: auto;">' + window.location.search + '</pre>';
-		headerContent += '</div>';
-		
-		debugSection.innerHTML = headerContent;
-		document.body.appendChild(debugSection);
-		
-		// Add a toggle button
-		const toggleButton = document.createElement('button');
-		toggleButton.textContent = isDebugMode ? 'Hide Debug Info' : 'Show Debug Info';
-		toggleButton.style.position = 'fixed';
-		toggleButton.style.bottom = '20px';
-		toggleButton.style.right = '20px';
-		toggleButton.style.padding = '8px 12px';
-		toggleButton.style.borderRadius = '4px';
-		toggleButton.style.backgroundColor = '#f0f0f0';
-		toggleButton.style.border = '1px solid #ccc';
-		toggleButton.style.cursor = 'pointer';
-		toggleButton.onclick = () => {
-			const isVisible = debugSection.style.display !== 'none';
-			debugSection.style.display = isVisible ? 'none' : 'block';
-			toggleButton.textContent = isVisible ? 'Show Debug Info' : 'Hide Debug Info';
-		};
-		document.body.appendChild(toggleButton);
-		
-		// Helper function to log to debug section
-		const logToDebug = (message: string | any, isError = false) => {
-			const line = document.createElement('div');
-			line.style.color = isError ? 'red' : 'black';
-			line.style.marginBottom = '5px';
-			line.textContent = typeof message === 'string' ? message : JSON.stringify(message);
-			debugSection.appendChild(line);
-		};
-		
-		// Create a "Test submission" button
-		const testButton = document.createElement('button');
-		testButton.textContent = 'Create Test Submission';
-		testButton.style.position = 'fixed';
-		testButton.style.bottom = '60px';
-		testButton.style.right = '20px';
-		testButton.style.padding = '8px 12px';
-		testButton.style.borderRadius = '4px';
-		testButton.style.backgroundColor = '#e0e0e0';
-		testButton.style.border = '1px solid #ccc';
-		testButton.style.cursor = 'pointer';
-		document.body.appendChild(testButton);
-		
-		// Handler for test button
-		testButton.onclick = async () => {
-			logToDebug('Creating test submission with form data plus fallbacks...');
-			
-			// Get current URL parameters for comparison
-			const currentParams = new URLSearchParams(window.location.search);
-			
-			// Create a test submission that uses actual form data when available
-			const testData = {
-				// Use actual name/email if present, otherwise use test values
-				name: currentParams.get('name') || storedQuizData.name || 'Test User',
-				email: currentParams.get('email') || storedQuizData.email || 'test@example.com',
-				interests: currentParams.getAll('interests').length ? 
-					currentParams.getAll('interests') : storedQuizData.interests || ['personal', 'professional'],
-				primary_goal: currentParams.get('primary_goal') || storedQuizData.primary_goal || 'improve_skills',
-				time_commitment: currentParams.get('time_commitment') || storedQuizData.time_commitment || 'significant',
-				experience_level: currentParams.get('experience_level') || storedQuizData.experience_level || 'intermediate',
-				preferred_resources: currentParams.getAll('preferred_resources').length ? 
-					currentParams.getAll('preferred_resources') : storedQuizData.preferred_resources || ['courses', 'mentorship'],
-				challenges: currentParams.get('challenges') || storedQuizData.challenges || 'Testing the submission functionality',
-				timeline: currentParams.get('timeline') || storedQuizData.timeline || 'soon',
-				score: displayScore || storedQuizData.score || 85,
-				timestamp: new Date().toISOString()
-			};
-			
-			logToDebug('Form data comparison:');
-			logToDebug('URL contains name: ' + (currentParams.get('name') ? 'YES' : 'NO'));
-			logToDebug('URL contains email: ' + (currentParams.get('email') ? 'YES' : 'NO'));
-			
-			logToDebug('Test data: ' + JSON.stringify(testData, null, 2));
-			
-			try {
-				// Submit data to API endpoint
-				const response = await fetch('/api/quiz-submissions', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify(testData)
-				});
-				
-				logToDebug(`Response status: ${response.status}`);
-				const data = await response.json();
-				
-				logToDebug('Test submission successful!');
-				logToDebug(`Submission ID: ${data.id || 'Unknown'}`);
-				
-				// Display logs from the server if available
-				if (data.logs && Array.isArray(data.logs)) {
-					logToDebug('Server logs:');
-					data.logs.forEach((log: string) => logToDebug(`- ${log}`));
-				}
-				
-				// Show debug panel
-				debugSection.style.display = 'block';
-				toggleButton.textContent = 'Hide Debug Info';
-			} catch (error: any) {
-				logToDebug(`Error creating test submission: ${error.message}`, true);
-				console.error('Test submission error:', error);
-			}
-		};
-		
-		// Get form data
-		const params = new URLSearchParams(window.location.search);
-		
-		// Log all URL parameters for debugging
-		logToDebug('All URL parameters:');
-		let paramCount = 0;
-		params.forEach((value, key) => {
-			paramCount++;
-			logToDebug(`${key}: ${value}`);
-		});
-		logToDebug(`Total parameters found: ${paramCount}`);
-		
-		// Check specifically for critical fields
-		if (!params.has('name')) logToDebug('WARNING: name parameter is missing!', true);
-		if (!params.has('email')) logToDebug('WARNING: email parameter is missing!', true);
-		
-		// Check for array fields
-		const interestsValues = params.getAll('interests');
-		const resourcesValues = params.getAll('preferred_resources');
-		logToDebug(`Interests (${interestsValues.length}): ${interestsValues.join(', ')}`);
-		logToDebug(`Preferred Resources (${resourcesValues.length}): ${resourcesValues.join(', ')}`);
-		
 		// Get the score from the document
-		// This gets the actual score displayed on the page rather than relying on URL params
 		let displayScore = 0;
 		const scoreElement = document.querySelector('.text-xs.font-semibold.inline-block.text-primary');
 		if (scoreElement && scoreElement.textContent) {
 			displayScore = parseInt(scoreElement.textContent.replace('%', '')) || 0;
-			logToDebug(`Score from page element: ${displayScore}%`);
-		} else {
-			logToDebug('Warning: Could not find score element on page', true);
 		}
 		
 		// Build quiz data with proper validation and defaults, using localStorage data as fallback
 		const finalQuizData = {
-			name: params.get('name') || storedQuizData.name || 'Anonymous User',
-			email: params.get('email') || storedQuizData.email || 'quiz@example.com',
-			interests: params.getAll('interests').length > 0 ? params.getAll('interests') : storedQuizData.interests || [],
-			primary_goal: params.get('primary_goal') || storedQuizData.primary_goal || 'general',
-			time_commitment: params.get('time_commitment') || storedQuizData.time_commitment || 'moderate',
-			experience_level: params.get('experience_level') || storedQuizData.experience_level || 'intermediate',
-			preferred_resources: params.getAll('preferred_resources').length > 0 ? params.getAll('preferred_resources') : storedQuizData.preferred_resources || [],
-			challenges: params.get('challenges') || storedQuizData.challenges || 'No specific challenges mentioned',
-			timeline: params.get('timeline') || storedQuizData.timeline || 'soon',
-			score: displayScore || parseInt(params.get('score') || '0') || storedQuizData.score || 85,
+			name: urlParams.get('name') || storedQuizData.name || 'Anonymous User',
+			email: urlParams.get('email') || storedQuizData.email || 'quiz@example.com',
+			interests: urlParams.getAll('interests').length > 0 ? urlParams.getAll('interests') : storedQuizData.interests || [],
+			primary_goal: urlParams.get('primary_goal') || storedQuizData.primary_goal || 'general',
+			time_commitment: urlParams.get('time_commitment') || storedQuizData.time_commitment || 'moderate',
+			experience_level: urlParams.get('experience_level') || storedQuizData.experience_level || 'intermediate',
+			preferred_resources: urlParams.getAll('preferred_resources').length > 0 ? urlParams.getAll('preferred_resources') : storedQuizData.preferred_resources || [],
+			challenges: urlParams.get('challenges') || storedQuizData.challenges || 'No specific challenges mentioned',
+			timeline: urlParams.get('timeline') || storedQuizData.timeline || 'soon',
+			score: displayScore || parseInt(urlParams.get('score') || '0') || storedQuizData.score || 85,
 			timestamp: new Date().toISOString()
 		};
 		
-		// Log the data being sent
-		logToDebug(`Submitting data for: ${finalQuizData.name}`);
-		logToDebug(`Email: ${finalQuizData.email || 'Not provided'}`);
-		logToDebug(`Score: ${finalQuizData.score}`);
-		logToDebug(`Primary Goal: ${finalQuizData.primary_goal}`);
-		logToDebug(`Time Commitment: ${finalQuizData.time_commitment}`);
-		logToDebug(`Experience Level: ${finalQuizData.experience_level}`);
-		logToDebug(`Timeline: ${finalQuizData.timeline}`);
-		logToDebug(`Challenges: ${finalQuizData.challenges}`);
-		logToDebug(`Interests: ${finalQuizData.interests.join(', ')}`);
-		logToDebug(`Preferred Resources: ${finalQuizData.preferred_resources.join(', ')}`);
-		
-		// Verify required fields for API submission
-		if (!finalQuizData.email || !finalQuizData.name) {
-			logToDebug('Warning: Missing required fields (name or email)', true);
-			logToDebug('API submission may fail. Check form data.', true);
-		}
-		
 		// Submit data to API endpoint
-		// Validate the data one more time before submission
 		const finalSubmissionData = {
 			...finalQuizData,
 			// Force these fields to have values to prevent API errors
@@ -552,10 +340,7 @@ const recommendations = generateRecommendations(Astro.url.searchParams);
 			timestamp: finalQuizData.timestamp || new Date().toISOString()
 		};
 		
-		// Log the final submission data
-		logToDebug('Final data being sent to API:');
-		logToDebug(JSON.stringify(finalSubmissionData, null, 2));
-		
+		// Submit data to API endpoint (if it exists)
 		fetch('/api/quiz-submissions', {
 			method: 'POST',
 			headers: {
@@ -564,23 +349,12 @@ const recommendations = generateRecommendations(Astro.url.searchParams);
 			body: JSON.stringify(finalSubmissionData)
 		})
 		.then(response => {
-			logToDebug(`Response status: ${response.status}`);
 			return response.json();
 		})
 		.then(data => {
-			logToDebug('Submission successful!');
-			logToDebug(`Submission ID: ${data.id || data.submissionId || 'Unknown'}`);
-			
-			// Display logs from the server if available
-			if (data.logs && Array.isArray(data.logs)) {
-				logToDebug('Server logs:');
-				data.logs.forEach((log: string) => logToDebug(`- ${log}`));
-			}
-			
-			console.log('Quiz submission success:', data);
+			// Submission successful
 		})
 		.catch(error => {
-			logToDebug(`Error submitting quiz data: ${error.message}`, true);
 			console.error('Quiz submission error:', error);
 		});
 	});

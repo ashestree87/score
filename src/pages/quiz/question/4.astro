@@ -1,14 +1,5 @@
 ---
 import QuizLayout from '../../../layouts/QuizLayout.astro';
-
-// Debug info
-console.log("Question 4 - URL Parameters:");
-console.log("name:", Astro.url.searchParams.get('name'));
-console.log("email:", Astro.url.searchParams.get('email'));
-console.log("interests:", Astro.url.searchParams.getAll('interests'));
-console.log("primary_goal:", Astro.url.searchParams.get('primary_goal'));
-console.log("time_commitment:", Astro.url.searchParams.get('time_commitment'));
-console.log("experience_level:", Astro.url.searchParams.get('experience_level'));
 ---
 
 <QuizLayout title="Quiz | Question 4" currentStep={4} totalSteps={5}>
@@ -125,7 +116,7 @@ console.log("experience_level:", Astro.url.searchParams.get('experience_level'))
 		
 		<div class="pt-4 flex justify-between">
 			<a 
-				href={`/quiz/question/3?${new URLSearchParams(Astro.url.searchParams)}`}
+				href={`/quiz/question/3?name=${Astro.url.searchParams.get('name') || ''}&email=${Astro.url.searchParams.get('email') || ''}`}
 				class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
 			>
 				Previous
@@ -142,6 +133,21 @@ console.log("experience_level:", Astro.url.searchParams.get('experience_level'))
 </QuizLayout> 
 
 <script>
+	// Define interface for quiz data
+	interface QuizData {
+		name?: string;
+		email?: string;
+		interests?: string[];
+		primary_goal?: string;
+		time_commitment?: string;
+		experience_level?: string;
+		preferred_resources?: string[];
+		timeline?: string;
+		challenges?: string;
+		score?: number;
+		[key: string]: any;
+	}
+	
 	// Using localStorage for reliable data persistence
 	document.addEventListener('DOMContentLoaded', () => {
 		const form = document.getElementById('resourcesForm') as HTMLFormElement;
@@ -150,8 +156,7 @@ console.log("experience_level:", Astro.url.searchParams.get('experience_level'))
 		try {
 			const storedData = localStorage.getItem('quizData');
 			if (storedData) {
-				const quizData = JSON.parse(storedData);
-				console.log('Loaded quiz data from localStorage:', quizData);
+				const quizData: QuizData = JSON.parse(storedData);
 				
 				// Pre-fill hidden fields from localStorage data
 				const nameField = document.querySelector('input[name="name"]') as HTMLInputElement;
@@ -166,12 +171,13 @@ console.log("experience_level:", Astro.url.searchParams.get('experience_level'))
 				if (timeCommitmentField && quizData.time_commitment) timeCommitmentField.value = quizData.time_commitment;
 				if (experienceLevelField && quizData.experience_level) experienceLevelField.value = quizData.experience_level;
 				
-				// Log the pre-filled data
-				console.log('Pre-filled form data from localStorage:');
-				console.log('Name:', nameField?.value);
-				console.log('Email:', emailField?.value);
-			} else {
-				console.warn('No quiz data found in localStorage');
+				// Check if preferred resources were previously selected
+				if (quizData.preferred_resources && Array.isArray(quizData.preferred_resources)) {
+					quizData.preferred_resources.forEach(resource => {
+						const resourceInput = document.querySelector(`input[name="preferred_resources"][value="${resource}"]`) as HTMLInputElement;
+						if (resourceInput) resourceInput.checked = true;
+					});
+				}
 			}
 		} catch (error) {
 			console.error('Error loading quiz data from localStorage:', error);
@@ -194,7 +200,7 @@ console.log("experience_level:", Astro.url.searchParams.get('experience_level'))
 				// Load existing data, update it with new values
 				try {
 					const storedData = localStorage.getItem('quizData');
-					let quizData = storedData ? JSON.parse(storedData) : {};
+					let quizData: QuizData = storedData ? JSON.parse(storedData) : {};
 					
 					// Update with new information
 					quizData = {
@@ -204,7 +210,6 @@ console.log("experience_level:", Astro.url.searchParams.get('experience_level'))
 					
 					// Save updated data
 					localStorage.setItem('quizData', JSON.stringify(quizData));
-					console.log('Updated quiz data in localStorage:', quizData);
 					
 					// Navigate to next question with basic params in URL
 					const url = new URL('/quiz/question/5', window.location.origin);

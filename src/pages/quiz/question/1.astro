@@ -1,11 +1,5 @@
 ---
 import QuizLayout from '../../../layouts/QuizLayout.astro';
-
-// Debug info
-console.log("Question 1 - URL Parameters:");
-console.log("name:", Astro.url.searchParams.get('name'));
-console.log("email:", Astro.url.searchParams.get('email'));
-console.log("interests:", Astro.url.searchParams.getAll('interests'));
 ---
 
 <QuizLayout title="Quiz | Question 1" currentStep={1} totalSteps={5}>
@@ -97,6 +91,21 @@ console.log("interests:", Astro.url.searchParams.getAll('interests'));
 </QuizLayout> 
 
 <script>
+	// Define interface for quiz data
+	interface QuizData {
+		name?: string;
+		email?: string;
+		interests?: string[];
+		primary_goal?: string;
+		time_commitment?: string;
+		experience_level?: string;
+		preferred_resources?: string[];
+		timeline?: string;
+		challenges?: string;
+		score?: number;
+		[key: string]: any;
+	}
+	
 	// Using localStorage for reliable data persistence
 	document.addEventListener('DOMContentLoaded', () => {
 		const form = document.getElementById('goalForm') as HTMLFormElement;
@@ -105,8 +114,7 @@ console.log("interests:", Astro.url.searchParams.getAll('interests'));
 		try {
 			const storedData = localStorage.getItem('quizData');
 			if (storedData) {
-				const quizData = JSON.parse(storedData);
-				console.log('Loaded quiz data from localStorage:', quizData);
+				const quizData: QuizData = JSON.parse(storedData);
 				
 				// Pre-fill hidden fields from localStorage data
 				const nameField = document.querySelector('input[name="name"]') as HTMLInputElement;
@@ -115,12 +123,11 @@ console.log("interests:", Astro.url.searchParams.getAll('interests'));
 				if (nameField && quizData.name) nameField.value = quizData.name;
 				if (emailField && quizData.email) emailField.value = quizData.email;
 				
-				// Update debug info on the page
-				console.log('Pre-filled fields from localStorage:');
-				console.log('Name:', nameField?.value);
-				console.log('Email:', emailField?.value);
-			} else {
-				console.warn('No quiz data found in localStorage');
+				// Pre-select the goal if it exists
+				if (quizData.primary_goal) {
+					const goalInput = document.querySelector(`input[name="primary_goal"][value="${quizData.primary_goal}"]`) as HTMLInputElement;
+					if (goalInput) goalInput.checked = true;
+				}
 			}
 		} catch (error) {
 			console.error('Error loading quiz data from localStorage:', error);
@@ -145,7 +152,7 @@ console.log("interests:", Astro.url.searchParams.getAll('interests'));
 				// Load existing data, update it with new values
 				try {
 					const storedData = localStorage.getItem('quizData');
-					let quizData = storedData ? JSON.parse(storedData) : {};
+					let quizData: QuizData = storedData ? JSON.parse(storedData) : {};
 					
 					// Update with new information
 					quizData = {
@@ -157,7 +164,6 @@ console.log("interests:", Astro.url.searchParams.getAll('interests'));
 					
 					// Save updated data
 					localStorage.setItem('quizData', JSON.stringify(quizData));
-					console.log('Updated quiz data in localStorage:', quizData);
 					
 					// Navigate to next question with basic params in URL
 					const url = new URL('/quiz/question/2', window.location.origin);

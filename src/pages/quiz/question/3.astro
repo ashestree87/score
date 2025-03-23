@@ -116,7 +116,6 @@ import QuizLayout from '../../../layouts/QuizLayout.astro';
 		if (storedData) {
 			try {
 				quizData = JSON.parse(storedData);
-				console.log('Loaded quiz data from localStorage:', quizData);
 				
 				// Pre-fill form fields with stored data
 				const nameInput = document.querySelector('input[name="name"]') as HTMLInputElement | null;
@@ -160,7 +159,6 @@ import QuizLayout from '../../../layouts/QuizLayout.astro';
 						const updatedData: QuizData = JSON.parse(storedData);
 						updatedData.experience_level = experienceLevel;
 						localStorage.setItem('quizData', JSON.stringify(updatedData));
-						console.log('Updated quiz data in localStorage:', updatedData);
 					} catch (error) {
 						console.error('Error updating localStorage data:', error);
 					}
