@@ -7,7 +7,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "dev:cf": "npm run build && miniflare --kv SCORES_KV --env API_KEY=test_key_local --d1 DB=score_database --site dist",
+    "dev:cf": "npm run build && miniflare --kv SCORE_KV --env API_KEY=test_key_local --d1 SCORE_DB=score_database --site dist",
     "init-db": "node scripts/init-db.js"
   },
   "dependencies": {

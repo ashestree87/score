@@ -376,6 +376,12 @@ const recommendations = generateRecommendations(Astro.url.searchParams);
 		logToDebug(`Interests: ${quizData.interests.join(', ')}`);
 		logToDebug(`Preferred Resources: ${quizData.preferred_resources.join(', ')}`);
 		
+		// Verify required fields for API submission
+		if (!quizData.email || !quizData.name) {
+			logToDebug('Warning: Missing required fields (name or email)', true);
+			logToDebug('API submission may fail. Check form data.', true);
+		}
+		
 		// Submit data to API endpoint
 		fetch('/api/quiz-submissions', {
 			method: 'POST',
@@ -390,7 +396,7 @@ const recommendations = generateRecommendations(Astro.url.searchParams);
 		})
 		.then(data => {
 			logToDebug('Submission successful!');
-			logToDebug(`Submission ID: ${data.id || 'Unknown'}`);
+			logToDebug(`Submission ID: ${data.id || data.submissionId || 'Unknown'}`);
 			
 			// Display logs from the server if available
 			if (data.logs && Array.isArray(data.logs)) {
