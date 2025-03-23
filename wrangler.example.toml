@@ -14,16 +14,16 @@ API_KEY = "your_api_key_here" # Replace with your actual API key
 ADMIN_TOKEN = "your_admin_token_here" # Replace with a secure random token
 
 # KV Namespace binding
-# The binding 'SCORES_KV' is what your code uses to access the KV namespace called 'score_kv'
+# The binding name 'SCORE_KV' must match what your code uses
 [[kv_namespaces]]
-binding = "SCORES_KV"
+binding = "SCORE_KV"
 id = "your_kv_id_here" # Replace with the ID of your 'score_kv' namespace
 preview_id = "your_preview_kv_id_here" # Replace with the preview ID of your 'score_kv' namespace
 
 # D1 Database binding
-# The binding 'DB' is what your code uses to access the D1 database called 'score_db'
+# The binding name 'SCORE_DB' must match what your code uses
 [[d1_databases]]
-binding = "DB"
+binding = "SCORE_DB"
 database_name = "score_db" # The actual database name in Cloudflare
 database_id = "your_d1_id_here" # Replace with the ID of your 'score_db' database
 

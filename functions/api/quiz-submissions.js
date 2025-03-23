@@ -43,11 +43,11 @@ export async function onRequest(context) {
     // Log available bindings
     logs.push(`Available bindings: ${Object.keys(env).join(', ')}`);
     
-    // Store in KV
-    if (env.SCORES_KV) {
+    // Store in KV - using SCORE_KV instead of SCORES_KV
+    if (env.SCORE_KV) {
       logs.push("KV namespace found, attempting to store data");
       try {
-        await env.SCORES_KV.put(key, JSON.stringify(data));
+        await env.SCORE_KV.put(key, JSON.stringify(data));
         logs.push("Successfully stored data in KV");
       } catch (kvError) {
         logs.push(`KV storage error: ${kvError.message}`);
@@ -56,12 +56,12 @@ export async function onRequest(context) {
       logs.push("WARNING: KV namespace not found");
     }
     
-    // Store in D1 database if available
-    if (env.DB) {
+    // Store in D1 database - using SCORE_DB instead of DB
+    if (env.SCORE_DB) {
       logs.push("D1 database found, attempting to store data");
       try {
         // This assumes you have a "submissions" table created
-        const stmt = env.DB.prepare(
+        const stmt = env.SCORE_DB.prepare(
           `INSERT INTO submissions (id, name, email, score, data, created_at) 
            VALUES (?, ?, ?, ?, ?, ?)`
         );
@@ -77,7 +77,7 @@ export async function onRequest(context) {
         logs.push("Successfully stored data in D1 database");
         
         // Confirm data was stored by reading it back
-        const readCheck = await env.DB.prepare(
+        const readCheck = await env.SCORE_DB.prepare(
           `SELECT * FROM submissions WHERE id = ?`
         ).bind(submissionId).all();
         logs.push(`Read check from DB: Found ${readCheck.results?.length || 0} records`);

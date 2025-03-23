@@ -35,14 +35,17 @@ export async function onRequest(context) {
     
     results.logs.push(`Requested action: ${action}`);
     
-    // Check KV data
-    if (env.SCORES_KV) {
+    // Log available bindings
+    results.logs.push(`Available bindings: ${Object.keys(env).join(', ')}`);
+    
+    // Check KV data - using SCORE_KV instead of SCORES_KV
+    if (env.SCORE_KV) {
       results.logs.push("KV namespace found");
       
       try {
         if (action === 'list') {
           // List all keys
-          const keys = await env.SCORES_KV.list({ prefix: 'submission:' });
+          const keys = await env.SCORE_KV.list({ prefix: 'submission:' });
           results.kv.status = 'success';
           results.kv.count = keys.keys.length;
           results.logs.push(`Found ${keys.keys.length} keys in KV`);
@@ -52,7 +55,7 @@ export async function onRequest(context) {
           
           // Get the values for each key
           for (const key of recentKeys) {
-            const value = await env.SCORES_KV.get(key.name, 'json');
+            const value = await env.SCORE_KV.get(key.name, 'json');
             if (value) {
               results.kv.data.push({
                 key: key.name,
@@ -71,14 +74,14 @@ export async function onRequest(context) {
       results.logs.push("KV namespace not available");
     }
     
-    // Check D1 data
-    if (env.DB) {
+    // Check D1 data - using SCORE_DB instead of DB
+    if (env.SCORE_DB) {
       results.logs.push("D1 database found");
       
       try {
         if (action === 'list') {
           // Query the submissions table
-          const { results: dbResults } = await env.DB.prepare(
+          const { results: dbResults } = await env.SCORE_DB.prepare(
             `SELECT * FROM submissions ORDER BY created_at DESC LIMIT ?`
           ).bind(limit).all();
           
@@ -88,7 +91,7 @@ export async function onRequest(context) {
           results.logs.push(`Found ${results.d1.count} records in D1`);
         } else if (action === 'schema') {
           // Get table schema
-          const { results: tables } = await env.DB.prepare(
+          const { results: tables } = await env.SCORE_DB.prepare(
             `SELECT name FROM sqlite_master WHERE type='table'`
           ).all();
           
@@ -100,7 +103,7 @@ export async function onRequest(context) {
           if (tables && tables.length > 0) {
             results.d1.schema = {};
             for (const table of tables) {
-              const { results: columns } = await env.DB.prepare(
+              const { results: columns } = await env.SCORE_DB.prepare(
                 `PRAGMA table_info(${table.name})`
               ).all();
               results.d1.schema[table.name] = columns || [];

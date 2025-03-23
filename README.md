@@ -178,7 +178,7 @@ This project uses Cloudflare KV and D1 for data storage. To set up the bindings:
    - Replace `your_d1_id_here` with the ID of your "score_db" database
    - Replace `your_api_key_here` with your API key
 
-   Note: In your code, you'll access these resources using the binding names (`SCORES_KV` and `DB`), not the resource names.
+   Note: In your code, you'll access these resources using the binding names (`SCORE_KV` and `SCORE_DB`).
 
 4. **Important:** Never commit your `wrangler.toml` file to Git as it contains sensitive information.
 
