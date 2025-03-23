@@ -1,0 +1,37 @@
+# Example Cloudflare Pages configuration
+# Copy this file to wrangler.toml and fill in your actual values
+name = "score-quiz"
+compatibility_date = "2023-12-01"
+main = "./functions/_worker.js"
+
+# Static site settings
+[site]
+bucket = "./dist"
+
+# Specify environment bindings that will be available to your functions
+[vars]
+API_KEY = "your_api_key_here" # Replace with your actual API key
+ADMIN_TOKEN = "your_admin_token_here" # Replace with a secure random token
+
+# KV Namespace binding
+# The binding 'SCORES_KV' is what your code uses to access the KV namespace called 'score_kv'
+[[kv_namespaces]]
+binding = "SCORES_KV"
+id = "your_kv_id_here" # Replace with the ID of your 'score_kv' namespace
+preview_id = "your_preview_kv_id_here" # Replace with the preview ID of your 'score_kv' namespace
+
+# D1 Database binding
+# The binding 'DB' is what your code uses to access the D1 database called 'score_db'
+[[d1_databases]]
+binding = "DB"
+database_name = "score_db" # The actual database name in Cloudflare
+database_id = "your_d1_id_here" # Replace with the ID of your 'score_db' database
+
+# Example environment-specific settings
+[env.production]
+[env.production.vars]
+ENVIRONMENT = "production"
+
+[env.staging]
+[env.staging.vars]
+ENVIRONMENT = "staging" 

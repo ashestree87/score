@@ -207,6 +207,50 @@ const recommendations = generateRecommendations(Astro.url.searchParams);
 <script>
 	// Script to handle quiz data submission to API endpoint
 	document.addEventListener('DOMContentLoaded', () => {
+		// Create a debug section on the page
+		const debugSection = document.createElement('div');
+		debugSection.id = 'api-debug';
+		debugSection.style.display = 'none';
+		debugSection.style.margin = '20px auto';
+		debugSection.style.maxWidth = '800px';
+		debugSection.style.padding = '15px';
+		debugSection.style.border = '1px solid #ccc';
+		debugSection.style.borderRadius = '5px';
+		debugSection.style.backgroundColor = '#f8f8f8';
+		debugSection.style.fontFamily = 'monospace';
+		debugSection.style.whiteSpace = 'pre-wrap';
+		debugSection.style.fontSize = '14px';
+		debugSection.innerHTML = '<h3>API Debug Information</h3><p>Submitting quiz data...</p>';
+		document.body.appendChild(debugSection);
+		
+		// Add a toggle button
+		const toggleButton = document.createElement('button');
+		toggleButton.textContent = 'Show Debug Info';
+		toggleButton.style.position = 'fixed';
+		toggleButton.style.bottom = '20px';
+		toggleButton.style.right = '20px';
+		toggleButton.style.padding = '8px 12px';
+		toggleButton.style.borderRadius = '4px';
+		toggleButton.style.backgroundColor = '#f0f0f0';
+		toggleButton.style.border = '1px solid #ccc';
+		toggleButton.style.cursor = 'pointer';
+		toggleButton.onclick = () => {
+			const isVisible = debugSection.style.display !== 'none';
+			debugSection.style.display = isVisible ? 'none' : 'block';
+			toggleButton.textContent = isVisible ? 'Show Debug Info' : 'Hide Debug Info';
+		};
+		document.body.appendChild(toggleButton);
+		
+		// Helper function to log to debug section
+		const logToDebug = (message: string, isError = false) => {
+			const line = document.createElement('div');
+			line.style.color = isError ? 'red' : 'black';
+			line.style.marginBottom = '5px';
+			line.textContent = message;
+			debugSection.appendChild(line);
+		};
+		
+		// Get form data
 		const params = new URLSearchParams(window.location.search);
 		const quizData = {
 			name: params.get('name'),
@@ -218,8 +262,14 @@ const recommendations = generateRecommendations(Astro.url.searchParams);
 			preferred_resources: params.getAll('preferred_resources'),
 			challenges: params.get('challenges'),
 			timeline: params.get('timeline'),
+			score: parseInt(params.get('score') || '0'),
 			timestamp: new Date().toISOString()
 		};
+		
+		// Log the data being sent
+		logToDebug(`Submitting data for: ${quizData.name || 'Anonymous'}`);
+		logToDebug(`Email: ${quizData.email || 'Not provided'}`);
+		logToDebug(`Score: ${quizData.score}`);
 		
 		// Submit data to API endpoint
 		fetch('/api/quiz-submissions', {
@@ -229,8 +279,25 @@ const recommendations = generateRecommendations(Astro.url.searchParams);
 			},
 			body: JSON.stringify(quizData)
 		})
-		.then(response => response.json())
-		.then(data => console.log('Quiz submission success:', data))
-		.catch(error => console.error('Quiz submission error:', error));
+		.then(response => {
+			logToDebug(`Response status: ${response.status}`);
+			return response.json();
+		})
+		.then(data => {
+			logToDebug('Submission successful!');
+			logToDebug(`Submission ID: ${data.id || 'Unknown'}`);
+			
+			// Display logs from the server if available
+			if (data.logs && Array.isArray(data.logs)) {
+				logToDebug('Server logs:');
+				data.logs.forEach((log: string) => logToDebug(`- ${log}`));
+			}
+			
+			console.log('Quiz submission success:', data);
+		})
+		.catch(error => {
+			logToDebug(`Error submitting quiz data: ${error.message}`, true);
+			console.error('Quiz submission error:', error);
+		});
 	});
 </script> 

@@ -3,6 +3,20 @@
 # Script to build and deploy to Cloudflare Pages without needing local wrangler
 # This works by generating the _worker.js file that Cloudflare Pages expects
 
+# Check if wrangler.toml exists, if not create from example
+if [ ! -f wrangler.toml ]; then
+  echo "⚠️ wrangler.toml not found. Creating from example file..."
+  if [ -f wrangler.example.toml ]; then
+    cp wrangler.example.toml wrangler.toml
+    echo "⚠️ Please edit wrangler.toml to add your actual IDs and secrets!"
+    echo "⚠️ Press Ctrl+C to cancel, or any key to continue with placeholder values."
+    read -n 1 -s
+  else
+    echo "❌ wrangler.example.toml not found. Cannot continue."
+    exit 1
+  fi
+fi
+
 echo "🔨 Building the Astro site..."
 npm run build
 
@@ -23,11 +37,16 @@ echo "3. Set the following build configurations:"
 echo "   - Build command: npm run build"
 echo "   - Build output directory: dist"
 echo ""
-echo "4. Add the following environment variables in Cloudflare dashboard:"
+echo "4. Add the environment variables and bindings in Cloudflare dashboard:"
 echo "   - API_KEY: your-api-key"
+echo "   - ADMIN_TOKEN: your-admin-token"
+echo "   - KV Namespace: Bind 'SCORES_KV' to your 'score_kv' namespace"
+echo "   - D1 Database: Bind 'DB' to your 'score_db' database" 
 echo ""
-echo "5. Create the required resources in Cloudflare and update wrangler.toml:"
-echo "   - KV namespace: wrangler kv:namespace create \"SCORES_KV\""
-echo "   - D1 database: wrangler d1 create score_database"
+echo "5. Create the required resources in Cloudflare if they don't exist:"
+echo "   - KV namespace: wrangler kv:namespace create \"score_kv\""
+echo "   - D1 database: wrangler d1 create score_db"
+echo ""
+echo "⚠️ IMPORTANT: Do not commit your wrangler.toml file to Git as it contains sensitive information."
 echo ""
 echo "Done! Your site is ready for deployment." 

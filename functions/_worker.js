@@ -4,10 +4,12 @@
 
 // Import the quiz submission handler
 import { onRequest as quizSubmissionHandler } from './api/quiz-submissions.js';
+import { onRequest as adminHandler } from './api/admin.js';
 
 // Map of paths to their handlers
 const routes = {
   '/api/quiz-submissions': quizSubmissionHandler,
+  '/api/admin': adminHandler,
 };
 
 // Main request handler

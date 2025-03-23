@@ -147,9 +147,64 @@ npm install --legacy-peer-deps
 
 This project includes an `.npmrc` file with `legacy-peer-deps=true` to help avoid these issues.
 
-```sh
-npm create astro@latest -- --template basics
+## Cloudflare Bindings Setup
+
+This project uses Cloudflare KV and D1 for data storage. To set up the bindings:
+
+1. Copy `wrangler.example.toml` to `wrangler.toml`:
+   ```bash
+   cp wrangler.example.toml wrangler.toml
+   ```
+
+2. Create your Cloudflare resources:
+   
+   **KV Namespace:**
+   ```bash
+   # Creates a KV namespace called "score_kv"
+   wrangler kv:namespace create "score_kv"
+   wrangler kv:namespace create "score_kv" --preview
+   ```
+
+   **D1 Database:**
+   ```bash
+   # Creates a D1 database called "score_db"
+   wrangler d1 create score_db
+   wrangler d1 execute score_db --file=./schema.sql
+   ```
+
+3. Update `wrangler.toml` with your actual IDs:
+   - Replace `your_kv_id_here` with the ID of your "score_kv" namespace
+   - Replace `your_preview_kv_id_here` with the preview ID of your "score_kv" namespace
+   - Replace `your_d1_id_here` with the ID of your "score_db" database
+   - Replace `your_api_key_here` with your API key
+
+   Note: In your code, you'll access these resources using the binding names (`SCORES_KV` and `DB`), not the resource names.
+
+4. **Important:** Never commit your `wrangler.toml` file to Git as it contains sensitive information.
+
+For local development with Cloudflare bindings, use:
+
+```bash
+npm run dev:cf
 ```
+
+Or, if you have Docker installed, run:
+
+```bash
+docker-compose up
+```
+
+## Verifying Bindings
+
+After deploying or when running locally, you can verify that your bindings are working correctly by:
+
+1. Completing a quiz on your site
+2. Checking the debug panel on the results page (click "Show Debug Info")
+3. Using the admin API with your security token:
+   - List data: `/api/admin?action=list&token=your_admin_token_here`
+   - Check schema: `/api/admin?action=schema&token=your_admin_token_here`
+
+The admin API is protected by a token that you set in your `wrangler.toml` file. Make sure to use a strong, random token in production.
 
 [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/basics)
 [![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/basics)

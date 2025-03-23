@@ -1,5 +1,6 @@
 # build output
 dist/
+.output/
 
 # generated types
 .astro/
@@ -22,3 +23,10 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# Cloudflare config with secrets
+wrangler.toml
+
+# Local Cloudflare dev data
+.wrangler/
+.mf/
