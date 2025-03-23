@@ -26,30 +26,68 @@ export async function onRequest(context) {
   try {
     // Parse the incoming JSON data
     logs.push("Parsing request body");
-    const data = await request.json();
+    const bodyText = await request.text();
+    logs.push(`Raw request body: ${bodyText.substring(0, 500)}${bodyText.length > 500 ? '...' : ''}`);
+    
+    // Parse the JSON
+    let data;
+    try {
+      data = JSON.parse(bodyText);
+    } catch (parseError) {
+      logs.push(`JSON parse error: ${parseError.message}`);
+      return new Response(JSON.stringify({ 
+        error: "Invalid JSON format", 
+        details: parseError.message,
+        logs: logs
+      }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+    
     logs.push(`Received data for: ${data.name || 'Unknown'}, Email: ${data.email || 'None'}`);
+    logs.push(`Original data object keys: ${Object.keys(data).join(', ')}`);
     
     // Validate data and set defaults for required fields
-    if (!data.name) data.name = "Anonymous";
-    if (!data.score) {
-      data.score = parseInt(data.score) || 0;
-      logs.push(`Score was missing or invalid, defaulting to: ${data.score}`);
+    if (!data.name) {
+      data.name = "Anonymous";
+      logs.push("Name was missing, defaulted to 'Anonymous'");
+    }
+    
+    if (data.score === undefined || data.score === null) {
+      data.score = 75; // Default score if missing
+      logs.push(`Score was missing, defaulted to: ${data.score}`);
     } else {
       // Ensure score is a number
-      data.score = parseInt(data.score) || 0;
-      logs.push(`Validated score: ${data.score}`);
+      const parsedScore = parseInt(data.score);
+      if (isNaN(parsedScore)) {
+        logs.push(`Score was not a valid number: "${data.score}", defaulting to 75`);
+        data.score = 75;
+      } else {
+        data.score = parsedScore;
+        logs.push(`Validated score: ${data.score}`);
+      }
     }
     
     // Ensure arrays are properly initialized
-    if (!Array.isArray(data.interests)) data.interests = [];
-    if (!Array.isArray(data.preferred_resources)) data.preferred_resources = [];
+    if (!Array.isArray(data.interests)) {
+      data.interests = [];
+      logs.push("Interests was not an array, defaulted to empty array");
+    }
+    
+    if (!Array.isArray(data.preferred_resources)) {
+      data.preferred_resources = [];
+      logs.push("Preferred resources was not an array, defaulted to empty array");
+    }
     
     // Ensure string fields exist
-    if (!data.primary_goal) data.primary_goal = "";
-    if (!data.time_commitment) data.time_commitment = "";
-    if (!data.experience_level) data.experience_level = "";
-    if (!data.challenges) data.challenges = "";
-    if (!data.timeline) data.timeline = "";
+    const stringFields = ['primary_goal', 'time_commitment', 'experience_level', 'challenges', 'timeline', 'email'];
+    stringFields.forEach(field => {
+      if (typeof data[field] !== 'string') {
+        data[field] = data[field] ? String(data[field]) : "";
+        logs.push(`Field "${field}" was not a string, converted to: "${data[field]}"`);
+      }
+    });
     
     // Add timestamp if not provided
     if (!data.timestamp) {
@@ -64,7 +102,11 @@ export async function onRequest(context) {
       score: data.score,
       interests: data.interests,
       primary_goal: data.primary_goal,
-      // Don't log all fields to keep logs concise
+      time_commitment: data.time_commitment,
+      experience_level: data.experience_level,
+      preferred_resources: data.preferred_resources,
+      challenges: data.challenges,
+      timeline: data.timeline
     })}`);
     
     // Generate a unique key for the submission
@@ -79,10 +121,21 @@ export async function onRequest(context) {
     if (env.SCORE_KV) {
       logs.push("KV namespace found, attempting to store data");
       try {
-        await env.SCORE_KV.put(key, JSON.stringify(data));
+        const jsonData = JSON.stringify(data);
+        logs.push(`Serialized JSON data (first 100 chars): ${jsonData.substring(0, 100)}...`);
+        
+        await env.SCORE_KV.put(key, jsonData);
         logs.push("Successfully stored data in KV");
+        
+        // Verify storage by reading it back
+        const readBack = await env.SCORE_KV.get(key);
+        logs.push(`KV verification - data retrieved: ${readBack ? 'yes' : 'no'}`);
+        if (readBack) {
+          logs.push(`KV data length: ${readBack.length} characters`);
+        }
       } catch (kvError) {
         logs.push(`KV storage error: ${kvError.message}`);
+        logs.push(`KV error stack: ${kvError.stack || 'No stack trace'}`);
       }
     } else {
       logs.push("WARNING: KV namespace not found");
@@ -98,21 +151,39 @@ export async function onRequest(context) {
            VALUES (?, ?, ?, ?, ?, ?)`
         );
         
-        await stmt.bind(
+        const jsonData = JSON.stringify(data);
+        logs.push(`Prepared D1 insert statement with: 
+          id: ${submissionId}
+          name: ${data.name}
+          email: ${data.email}
+          score: ${data.score}
+          data: ${jsonData.substring(0, 50)}...
+          created_at: ${data.timestamp}`);
+        
+        const result = await stmt.bind(
           submissionId,
-          data.name || "Anonymous",
-          data.email || "",
-          data.score || 0,
-          JSON.stringify(data),
+          data.name,
+          data.email,
+          data.score,
+          jsonData,
           data.timestamp
         ).run();
+        
+        logs.push(`D1 insert result: ${JSON.stringify(result)}`);
         logs.push("Successfully stored data in D1 database");
         
         // Confirm data was stored by reading it back
         const readCheck = await env.SCORE_DB.prepare(
           `SELECT * FROM submissions WHERE id = ?`
         ).bind(submissionId).all();
-        logs.push(`Read check from DB: Found ${readCheck.results?.length || 0} records`);
+        
+        if (readCheck.results && readCheck.results.length > 0) {
+          logs.push(`Read check from DB: Found ${readCheck.results.length} records`);
+          const firstResult = readCheck.results[0];
+          logs.push(`D1 verification - record retrieved: name=${firstResult.name}, score=${firstResult.score}`);
+        } else {
+          logs.push("D1 verification - No records found, this might indicate a problem");
+        }
       } catch (dbError) {
         logs.push(`Database error: ${dbError.message}`);
         logs.push(`Error stack: ${dbError.stack || 'No stack trace'}`);
@@ -127,6 +198,7 @@ export async function onRequest(context) {
       success: true, 
       id: submissionId,
       message: "Quiz submission recorded successfully",
+      data: data, // Return the data that was stored for verification
       logs: logs
     }), {
       status: 201,

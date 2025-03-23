@@ -255,12 +255,77 @@ const recommendations = generateRecommendations(Astro.url.searchParams);
 		document.body.appendChild(toggleButton);
 		
 		// Helper function to log to debug section
-		const logToDebug = (message: string, isError = false) => {
+		const logToDebug = (message: string | any, isError = false) => {
 			const line = document.createElement('div');
 			line.style.color = isError ? 'red' : 'black';
 			line.style.marginBottom = '5px';
 			line.textContent = message;
 			debugSection.appendChild(line);
+		};
+		
+		// Create a "Test submission" button
+		const testButton = document.createElement('button');
+		testButton.textContent = 'Create Test Submission';
+		testButton.style.position = 'fixed';
+		testButton.style.bottom = '60px';
+		testButton.style.right = '20px';
+		testButton.style.padding = '8px 12px';
+		testButton.style.borderRadius = '4px';
+		testButton.style.backgroundColor = '#e0e0e0';
+		testButton.style.border = '1px solid #ccc';
+		testButton.style.cursor = 'pointer';
+		document.body.appendChild(testButton);
+		
+		// Handler for test button
+		testButton.onclick = async () => {
+			logToDebug('Creating test submission with hardcoded values...');
+			
+			// Create a test submission with all required fields
+			const testData = {
+				name: 'Test User',
+				email: 'test@example.com',
+				interests: ['personal', 'professional'],
+				primary_goal: 'improve_skills',
+				time_commitment: 'significant',
+				experience_level: 'intermediate',
+				preferred_resources: ['courses', 'mentorship'],
+				challenges: 'Testing the submission functionality',
+				timeline: 'soon',
+				score: 85,
+				timestamp: new Date().toISOString()
+			};
+			
+			logToDebug('Test data: ' + JSON.stringify(testData, null, 2));
+			
+			try {
+				// Submit data to API endpoint
+				const response = await fetch('/api/quiz-submissions', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(testData)
+				});
+				
+				logToDebug(`Response status: ${response.status}`);
+				const data = await response.json();
+				
+				logToDebug('Test submission successful!');
+				logToDebug(`Submission ID: ${data.id || 'Unknown'}`);
+				
+				// Display logs from the server if available
+				if (data.logs && Array.isArray(data.logs)) {
+					logToDebug('Server logs:');
+					data.logs.forEach((log: string) => logToDebug(`- ${log}`));
+				}
+				
+				// Show debug panel
+				debugSection.style.display = 'block';
+				toggleButton.textContent = 'Hide Debug Info';
+			} catch (error: any) {
+				logToDebug(`Error creating test submission: ${error.message}`, true);
+				console.error('Test submission error:', error);
+			}
 		};
 		
 		// Get form data

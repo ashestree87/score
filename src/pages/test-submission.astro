@@ -1,0 +1,84 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Test Quiz Submission">
+  <main class="container mx-auto px-4 py-8 max-w-4xl">
+    <h1 class="text-3xl font-bold mb-6">Test Quiz Submission</h1>
+    
+    <div class="bg-white rounded-lg shadow-md p-8 mb-12">
+      <p class="mb-4">This page lets you directly test the quiz submission functionality.</p>
+      
+      <button 
+        id="submitTest" 
+        class="bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-md transition-colors"
+      >
+        Create Test Submission
+      </button>
+      
+      <div id="resultDisplay" class="mt-8">
+        <h2 class="text-xl font-bold mb-2">Results:</h2>
+        <pre id="results" class="bg-gray-100 p-4 rounded-lg overflow-auto max-h-[500px] text-sm"></pre>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const submitButton = document.getElementById('submitTest') as HTMLButtonElement;
+    const resultsElement = document.getElementById('results');
+    
+    if (!submitButton || !resultsElement) return;
+    
+    submitButton.addEventListener('click', async () => {
+      // Create test data with all fields populated
+      const testData = {
+        name: 'Test User ' + new Date().toLocaleTimeString(),
+        email: 'test@example.com',
+        interests: ['personal', 'professional'],
+        primary_goal: 'improve_skills',
+        time_commitment: 'significant',
+        experience_level: 'intermediate',
+        preferred_resources: ['courses', 'mentorship'],
+        challenges: 'Testing the submission via dedicated test page',
+        timeline: 'soon',
+        score: 85,
+        timestamp: new Date().toISOString()
+      };
+      
+      // Display the data we'll send
+      resultsElement.textContent = 'Sending data: ' + JSON.stringify(testData, null, 2);
+      
+      // Disable button while submitting
+      submitButton.disabled = true;
+      submitButton.textContent = 'Submitting...';
+      
+      try {
+        // Submit data to API endpoint
+        const response = await fetch('/api/quiz-submissions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(testData)
+        });
+        
+        // Parse the response
+        const data = await response.json();
+        
+        // Display full response for debugging
+        resultsElement.textContent = 'Response: ' + JSON.stringify(data, null, 2);
+        
+        console.log('Test submission success:', data);
+      } catch (error: any) {
+        resultsElement.textContent = 'Error: ' + error.message;
+        console.error('Test submission error:', error);
+      } finally {
+        // Re-enable button
+        submitButton.disabled = false;
+        submitButton.textContent = 'Create Test Submission';
+      }
+    });
+  });
+</script> 
