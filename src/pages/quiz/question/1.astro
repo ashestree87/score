@@ -97,9 +97,34 @@ console.log("interests:", Astro.url.searchParams.getAll('interests'));
 </QuizLayout> 
 
 <script>
-	// Enhanced form submission for Question 1
+	// Using localStorage for reliable data persistence
 	document.addEventListener('DOMContentLoaded', () => {
 		const form = document.getElementById('goalForm') as HTMLFormElement;
+		
+		// Load existing quiz data from localStorage
+		try {
+			const storedData = localStorage.getItem('quizData');
+			if (storedData) {
+				const quizData = JSON.parse(storedData);
+				console.log('Loaded quiz data from localStorage:', quizData);
+				
+				// Pre-fill hidden fields from localStorage data
+				const nameField = document.querySelector('input[name="name"]') as HTMLInputElement;
+				const emailField = document.querySelector('input[name="email"]') as HTMLInputElement;
+				
+				if (nameField && quizData.name) nameField.value = quizData.name;
+				if (emailField && quizData.email) emailField.value = quizData.email;
+				
+				// Update debug info on the page
+				console.log('Pre-filled fields from localStorage:');
+				console.log('Name:', nameField?.value);
+				console.log('Email:', emailField?.value);
+			} else {
+				console.warn('No quiz data found in localStorage');
+			}
+		} catch (error) {
+			console.error('Error loading quiz data from localStorage:', error);
+		}
 		
 		if (form) {
 			form.addEventListener('submit', (e) => {
@@ -107,21 +132,9 @@ console.log("interests:", Astro.url.searchParams.getAll('interests'));
 				
 				// Get form data
 				const formData = new FormData(form);
-				
-				// Get basic fields
 				const name = formData.get('name')?.toString() || '';
 				const email = formData.get('email')?.toString() || '';
 				const primaryGoal = formData.get('primary_goal')?.toString() || '';
-				
-				// Get interests array
-				const interests = formData.getAll('interests').map(value => value.toString());
-				
-				// Log the data for debugging
-				console.log('Goal form submission data:');
-				console.log('Name:', name);
-				console.log('Email:', email);
-				console.log('Interests:', interests);
-				console.log('Primary Goal:', primaryGoal);
 				
 				// Validate a goal is selected
 				if (!primaryGoal) {
@@ -129,24 +142,32 @@ console.log("interests:", Astro.url.searchParams.getAll('interests'));
 					return false;
 				}
 				
-				// Create URL with all parameters properly encoded
-				const url = new URL('/quiz/question/2', window.location.origin);
-				
-				// Add the basic parameters
-				url.searchParams.set('name', name);
-				url.searchParams.set('email', email);
-				url.searchParams.set('primary_goal', primaryGoal);
-				
-				// Add all interests
-				interests.forEach(interest => {
-					url.searchParams.append('interests', interest);
-				});
-				
-				// Log the final URL
-				console.log('Navigating to URL:', url.toString());
-				
-				// Navigate to the new URL
-				window.location.href = url.toString();
+				// Load existing data, update it with new values
+				try {
+					const storedData = localStorage.getItem('quizData');
+					let quizData = storedData ? JSON.parse(storedData) : {};
+					
+					// Update with new information
+					quizData = {
+						...quizData,
+						name,
+						email,
+						primary_goal: primaryGoal
+					};
+					
+					// Save updated data
+					localStorage.setItem('quizData', JSON.stringify(quizData));
+					console.log('Updated quiz data in localStorage:', quizData);
+					
+					// Navigate to next question with basic params in URL
+					const url = new URL('/quiz/question/2', window.location.origin);
+					url.searchParams.set('name', name);
+					url.searchParams.set('email', email);
+					window.location.href = url.toString();
+				} catch (error) {
+					console.error('Error updating quiz data in localStorage:', error);
+					alert('There was an error saving your response. Please try again.');
+				}
 			});
 		}
 	});

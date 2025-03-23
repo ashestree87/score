@@ -5,7 +5,7 @@ import QuizLayout from '../../../layouts/QuizLayout.astro';
 <QuizLayout title="Quiz | Question 3" currentStep={3} totalSteps={5}>
 	<h1 class="text-2xl font-bold text-primary mb-6">What's your experience level?</h1>
 	
-	<form action="/quiz/question/4" method="get" class="space-y-6">
+	<form id="experienceForm" action="/quiz/question/4" method="get" class="space-y-6">
 		<!-- Pass along previous data -->
 		<input type="hidden" name="name" value={Astro.url.searchParams.get('name') || ''} />
 		<input type="hidden" name="email" value={Astro.url.searchParams.get('email') || ''} />
@@ -77,7 +77,7 @@ import QuizLayout from '../../../layouts/QuizLayout.astro';
 		
 		<div class="pt-4 flex justify-between">
 			<a 
-				href={`/quiz/question/2?${new URLSearchParams(Astro.url.searchParams)}`}
+				href={`/quiz/question/2?name=${Astro.url.searchParams.get('name') || ''}&email=${Astro.url.searchParams.get('email') || ''}`}
 				class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
 			>
 				Previous
@@ -90,4 +90,96 @@ import QuizLayout from '../../../layouts/QuizLayout.astro';
 			</button>
 		</div>
 	</form>
-</QuizLayout> 
+</QuizLayout>
+
+<script>
+	// Define interface for quiz data
+	interface QuizData {
+		name?: string;
+		email?: string;
+		interests?: string[];
+		primary_goal?: string;
+		time_commitment?: string;
+		experience_level?: string;
+		preferred_resources?: string[];
+		timeline?: string;
+		challenges?: string;
+		score?: number;
+		[key: string]: any;
+	}
+	
+	document.addEventListener('DOMContentLoaded', () => {
+		// Load quiz data from localStorage
+		const storedData = localStorage.getItem('quizData');
+		let quizData: QuizData = {};
+		
+		if (storedData) {
+			try {
+				quizData = JSON.parse(storedData);
+				console.log('Loaded quiz data from localStorage:', quizData);
+				
+				// Pre-fill form fields with stored data
+				const nameInput = document.querySelector('input[name="name"]') as HTMLInputElement | null;
+				const emailInput = document.querySelector('input[name="email"]') as HTMLInputElement | null;
+				const timeInput = document.querySelector('input[name="time_commitment"]') as HTMLInputElement | null;
+				const goalInput = document.querySelector('input[name="primary_goal"]') as HTMLInputElement | null;
+				
+				if (nameInput && quizData.name) nameInput.value = quizData.name;
+				if (emailInput && quizData.email) emailInput.value = quizData.email;
+				if (timeInput && quizData.time_commitment) timeInput.value = quizData.time_commitment;
+				if (goalInput && quizData.primary_goal) goalInput.value = quizData.primary_goal;
+				
+				// Pre-select the experience level if it exists
+				if (quizData.experience_level) {
+					const experienceInput = document.querySelector(`input[name="experience_level"][value="${quizData.experience_level}"]`) as HTMLInputElement | null;
+					if (experienceInput) experienceInput.checked = true;
+				}
+			} catch (error) {
+				console.error('Error parsing localStorage data:', error);
+			}
+		}
+		
+		// Handle form submission
+		const form = document.getElementById('experienceForm') as HTMLFormElement | null;
+		if (form) {
+			form.addEventListener('submit', (e) => {
+				e.preventDefault();
+				
+				// Get form data
+				const formData = new FormData(form);
+				const experienceLevel = formData.get('experience_level')?.toString() || '';
+				
+				if (!experienceLevel) {
+					alert('Please select an experience level');
+					return;
+				}
+				
+				// Update localStorage with new experience level data
+				if (storedData) {
+					try {
+						const updatedData: QuizData = JSON.parse(storedData);
+						updatedData.experience_level = experienceLevel;
+						localStorage.setItem('quizData', JSON.stringify(updatedData));
+						console.log('Updated quiz data in localStorage:', updatedData);
+					} catch (error) {
+						console.error('Error updating localStorage data:', error);
+					}
+				} else {
+					// Create new data object if none exists
+					const newData: QuizData = {
+						name: formData.get('name')?.toString() || '',
+						email: formData.get('email')?.toString() || '',
+						interests: Array.from(formData.getAll('interests')).map(item => item.toString()),
+						primary_goal: formData.get('primary_goal')?.toString() || '',
+						time_commitment: formData.get('time_commitment')?.toString() || '',
+						experience_level: experienceLevel
+					};
+					localStorage.setItem('quizData', JSON.stringify(newData));
+				}
+				
+				// Redirect to next page
+				window.location.href = `/quiz/question/4?name=${encodeURIComponent(formData.get('name')?.toString() || '')}&email=${encodeURIComponent(formData.get('email')?.toString() || '')}`;
+			});
+		}
+	});
+</script> 

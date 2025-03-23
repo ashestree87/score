@@ -142,9 +142,40 @@ console.log("experience_level:", Astro.url.searchParams.get('experience_level'))
 </QuizLayout> 
 
 <script>
-	// Improved resources form validation and handling
+	// Using localStorage for reliable data persistence
 	document.addEventListener('DOMContentLoaded', () => {
 		const form = document.getElementById('resourcesForm') as HTMLFormElement;
+		
+		// Load existing quiz data from localStorage
+		try {
+			const storedData = localStorage.getItem('quizData');
+			if (storedData) {
+				const quizData = JSON.parse(storedData);
+				console.log('Loaded quiz data from localStorage:', quizData);
+				
+				// Pre-fill hidden fields from localStorage data
+				const nameField = document.querySelector('input[name="name"]') as HTMLInputElement;
+				const emailField = document.querySelector('input[name="email"]') as HTMLInputElement;
+				const primaryGoalField = document.querySelector('input[name="primary_goal"]') as HTMLInputElement;
+				const timeCommitmentField = document.querySelector('input[name="time_commitment"]') as HTMLInputElement;
+				const experienceLevelField = document.querySelector('input[name="experience_level"]') as HTMLInputElement;
+				
+				if (nameField && quizData.name) nameField.value = quizData.name;
+				if (emailField && quizData.email) emailField.value = quizData.email;
+				if (primaryGoalField && quizData.primary_goal) primaryGoalField.value = quizData.primary_goal;
+				if (timeCommitmentField && quizData.time_commitment) timeCommitmentField.value = quizData.time_commitment;
+				if (experienceLevelField && quizData.experience_level) experienceLevelField.value = quizData.experience_level;
+				
+				// Log the pre-filled data
+				console.log('Pre-filled form data from localStorage:');
+				console.log('Name:', nameField?.value);
+				console.log('Email:', emailField?.value);
+			} else {
+				console.warn('No quiz data found in localStorage');
+			}
+		} catch (error) {
+			console.error('Error loading quiz data from localStorage:', error);
+		}
 		
 		if (form) {
 			form.addEventListener('submit', (e) => {
@@ -152,56 +183,38 @@ console.log("experience_level:", Astro.url.searchParams.get('experience_level'))
 				
 				// Get form data
 				const formData = new FormData(form);
-				const name = formData.get('name')?.toString() || '';
-				const email = formData.get('email')?.toString() || '';
 				const resources = formData.getAll('preferred_resources').map(value => value.toString());
 				
-				// Get all hidden fields
-				const interests = formData.getAll('interests').map(value => value.toString());
-				const primaryGoal = formData.get('primary_goal')?.toString() || '';
-				const timeCommitment = formData.get('time_commitment')?.toString() || '';
-				const experienceLevel = formData.get('experience_level')?.toString() || '';
-				
-				// Log submission data
-				console.log('Resources form submission data:');
-				console.log('Name:', name);
-				console.log('Email:', email);
-				console.log('Interests:', interests);
-				console.log('Primary Goal:', primaryGoal);
-				console.log('Time Commitment:', timeCommitment);
-				console.log('Experience Level:', experienceLevel);
-				console.log('Preferred Resources:', resources);
-				
-				// Ensure hidden fields are present
-				if (!name || !email) {
-					console.error('Missing required hidden fields: name or email');
+				// Make sure at least one resource is selected
+				if (resources.length === 0) {
+					alert('Please select at least one preferred resource');
+					return false;
 				}
 				
-				// Create URL with all parameters properly encoded
-				const url = new URL('/quiz/question/5', window.location.origin);
-				
-				// Add the basic parameters
-				url.searchParams.set('name', name);
-				url.searchParams.set('email', email);
-				url.searchParams.set('primary_goal', primaryGoal);
-				url.searchParams.set('time_commitment', timeCommitment);
-				url.searchParams.set('experience_level', experienceLevel);
-				
-				// Add all interests
-				interests.forEach(interest => {
-					url.searchParams.append('interests', interest);
-				});
-				
-				// Add all preferred resources
-				resources.forEach(resource => {
-					url.searchParams.append('preferred_resources', resource);
-				});
-				
-				// Log the final URL
-				console.log('Navigating to URL:', url.toString());
-				
-				// Navigate to the new URL
-				window.location.href = url.toString();
+				// Load existing data, update it with new values
+				try {
+					const storedData = localStorage.getItem('quizData');
+					let quizData = storedData ? JSON.parse(storedData) : {};
+					
+					// Update with new information
+					quizData = {
+						...quizData,
+						preferred_resources: resources
+					};
+					
+					// Save updated data
+					localStorage.setItem('quizData', JSON.stringify(quizData));
+					console.log('Updated quiz data in localStorage:', quizData);
+					
+					// Navigate to next question with basic params in URL
+					const url = new URL('/quiz/question/5', window.location.origin);
+					url.searchParams.set('name', quizData.name || '');
+					url.searchParams.set('email', quizData.email || '');
+					window.location.href = url.toString();
+				} catch (error) {
+					console.error('Error updating quiz data in localStorage:', error);
+					alert('There was an error saving your response. Please try again.');
+				}
 			});
 		}
 	});

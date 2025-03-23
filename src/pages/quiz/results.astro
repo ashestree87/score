@@ -272,14 +272,72 @@ const recommendations = generateRecommendations(Astro.url.searchParams);
 <script>
 	// Script to handle quiz data submission to API endpoint
 	document.addEventListener('DOMContentLoaded', () => {
-		// Check if debug mode is requested or if required parameters are missing
-		const urlParams = new URLSearchParams(window.location.search);
+		// Define the quiz data interface for type safety
+		interface QuizData {
+			name?: string;
+			email?: string;
+			interests?: string[];
+			preferred_resources?: string[];
+			primary_goal?: string;
+			time_commitment?: string;
+			experience_level?: string;
+			timeline?: string;
+			challenges?: string;
+			score?: number;
+			timestamp?: string;
+			[key: string]: any; // Allow for any additional properties
+		}
+
+		// Load quiz data from localStorage
+		const storedData = localStorage.getItem('quizData');
+		let storedQuizData: QuizData = {};
+		
+		// Check if we have localStorage data
+		if (storedData) {
+			try {
+				storedQuizData = JSON.parse(storedData);
+				console.log('Loaded quiz data from localStorage:', storedQuizData);
+			} catch (error) {
+				console.error('Error parsing localStorage data:', error);
+			}
+		}
+		
+		// Check URL parameters
+		let urlParams = new URLSearchParams(window.location.search);
 		
 		// Check for missing or empty required parameters
 		const missingName = !urlParams.has('name') || urlParams.get('name') === '';
 		const missingEmail = !urlParams.has('email') || urlParams.get('email') === '';
 		const missingInterests = urlParams.getAll('interests').length === 0;
 		const missingResources = urlParams.getAll('preferred_resources').length === 0;
+		
+		// If we're missing data in the URL but have it in localStorage, construct a new URL
+		if ((missingName || missingEmail || missingInterests || missingResources) && Object.keys(storedQuizData).length > 0) {
+			console.log('Missing data in URL, using localStorage data to rebuild parameters');
+			
+			// Create a new URL with all localStorage data
+			const newUrl = new URL(window.location.pathname, window.location.origin);
+			
+			// Add all data from localStorage to URL
+			Object.entries(storedQuizData).forEach(([key, value]) => {
+				if (Array.isArray(value)) {
+					// Handle arrays (like interests and preferred_resources)
+					value.forEach(item => {
+						newUrl.searchParams.append(key, item.toString());
+					});
+				} else if (value !== null && value !== undefined) {
+					// Handle scalar values
+					newUrl.searchParams.set(key, value.toString());
+				}
+			});
+			
+			// Replace current URL without reloading
+			window.history.replaceState({}, '', newUrl.toString());
+			
+			// Reload the URL parameters after updating
+			urlParams = new URLSearchParams(window.location.search);
+			console.log('Updated URL parameters from localStorage');
+		}
 		
 		// Enable debug mode if any required fields are missing or debug is explicitly requested
 		const isDebugMode = urlParams.has('debug') || missingName || missingEmail || missingInterests || missingResources;
@@ -365,18 +423,18 @@ const recommendations = generateRecommendations(Astro.url.searchParams);
 			// Create a test submission that uses actual form data when available
 			const testData = {
 				// Use actual name/email if present, otherwise use test values
-				name: currentParams.get('name') || 'Test User',
-				email: currentParams.get('email') || 'test@example.com',
+				name: currentParams.get('name') || storedQuizData.name || 'Test User',
+				email: currentParams.get('email') || storedQuizData.email || 'test@example.com',
 				interests: currentParams.getAll('interests').length ? 
-					currentParams.getAll('interests') : ['personal', 'professional'],
-				primary_goal: currentParams.get('primary_goal') || 'improve_skills',
-				time_commitment: currentParams.get('time_commitment') || 'significant',
-				experience_level: currentParams.get('experience_level') || 'intermediate',
+					currentParams.getAll('interests') : storedQuizData.interests || ['personal', 'professional'],
+				primary_goal: currentParams.get('primary_goal') || storedQuizData.primary_goal || 'improve_skills',
+				time_commitment: currentParams.get('time_commitment') || storedQuizData.time_commitment || 'significant',
+				experience_level: currentParams.get('experience_level') || storedQuizData.experience_level || 'intermediate',
 				preferred_resources: currentParams.getAll('preferred_resources').length ? 
-					currentParams.getAll('preferred_resources') : ['courses', 'mentorship'],
-				challenges: currentParams.get('challenges') || 'Testing the submission functionality',
-				timeline: currentParams.get('timeline') || 'soon',
-				score: displayScore || 85,
+					currentParams.getAll('preferred_resources') : storedQuizData.preferred_resources || ['courses', 'mentorship'],
+				challenges: currentParams.get('challenges') || storedQuizData.challenges || 'Testing the submission functionality',
+				timeline: currentParams.get('timeline') || storedQuizData.timeline || 'soon',
+				score: displayScore || storedQuizData.score || 85,
 				timestamp: new Date().toISOString()
 			};
 			
@@ -450,35 +508,35 @@ const recommendations = generateRecommendations(Astro.url.searchParams);
 			logToDebug('Warning: Could not find score element on page', true);
 		}
 		
-		// Build quiz data with proper validation and defaults
-		const quizData = {
-			name: params.get('name') || 'Anonymous User',
-			email: params.get('email') || 'quiz@example.com',
-			interests: params.getAll('interests') || [],
-			primary_goal: params.get('primary_goal') || 'general',
-			time_commitment: params.get('time_commitment') || 'moderate',
-			experience_level: params.get('experience_level') || 'intermediate',
-			preferred_resources: params.getAll('preferred_resources') || [],
-			challenges: params.get('challenges') || 'No specific challenges mentioned',
-			timeline: params.get('timeline') || 'soon',
-			score: displayScore || parseInt(params.get('score') || '0') || 85,
+		// Build quiz data with proper validation and defaults, using localStorage data as fallback
+		const finalQuizData = {
+			name: params.get('name') || storedQuizData.name || 'Anonymous User',
+			email: params.get('email') || storedQuizData.email || 'quiz@example.com',
+			interests: params.getAll('interests').length > 0 ? params.getAll('interests') : storedQuizData.interests || [],
+			primary_goal: params.get('primary_goal') || storedQuizData.primary_goal || 'general',
+			time_commitment: params.get('time_commitment') || storedQuizData.time_commitment || 'moderate',
+			experience_level: params.get('experience_level') || storedQuizData.experience_level || 'intermediate',
+			preferred_resources: params.getAll('preferred_resources').length > 0 ? params.getAll('preferred_resources') : storedQuizData.preferred_resources || [],
+			challenges: params.get('challenges') || storedQuizData.challenges || 'No specific challenges mentioned',
+			timeline: params.get('timeline') || storedQuizData.timeline || 'soon',
+			score: displayScore || parseInt(params.get('score') || '0') || storedQuizData.score || 85,
 			timestamp: new Date().toISOString()
 		};
 		
 		// Log the data being sent
-		logToDebug(`Submitting data for: ${quizData.name}`);
-		logToDebug(`Email: ${quizData.email || 'Not provided'}`);
-		logToDebug(`Score: ${quizData.score}`);
-		logToDebug(`Primary Goal: ${quizData.primary_goal}`);
-		logToDebug(`Time Commitment: ${quizData.time_commitment}`);
-		logToDebug(`Experience Level: ${quizData.experience_level}`);
-		logToDebug(`Timeline: ${quizData.timeline}`);
-		logToDebug(`Challenges: ${quizData.challenges}`);
-		logToDebug(`Interests: ${quizData.interests.join(', ')}`);
-		logToDebug(`Preferred Resources: ${quizData.preferred_resources.join(', ')}`);
+		logToDebug(`Submitting data for: ${finalQuizData.name}`);
+		logToDebug(`Email: ${finalQuizData.email || 'Not provided'}`);
+		logToDebug(`Score: ${finalQuizData.score}`);
+		logToDebug(`Primary Goal: ${finalQuizData.primary_goal}`);
+		logToDebug(`Time Commitment: ${finalQuizData.time_commitment}`);
+		logToDebug(`Experience Level: ${finalQuizData.experience_level}`);
+		logToDebug(`Timeline: ${finalQuizData.timeline}`);
+		logToDebug(`Challenges: ${finalQuizData.challenges}`);
+		logToDebug(`Interests: ${finalQuizData.interests.join(', ')}`);
+		logToDebug(`Preferred Resources: ${finalQuizData.preferred_resources.join(', ')}`);
 		
 		// Verify required fields for API submission
-		if (!quizData.email || !quizData.name) {
+		if (!finalQuizData.email || !finalQuizData.name) {
 			logToDebug('Warning: Missing required fields (name or email)', true);
 			logToDebug('API submission may fail. Check form data.', true);
 		}
@@ -486,12 +544,12 @@ const recommendations = generateRecommendations(Astro.url.searchParams);
 		// Submit data to API endpoint
 		// Validate the data one more time before submission
 		const finalSubmissionData = {
-			...quizData,
+			...finalQuizData,
 			// Force these fields to have values to prevent API errors
-			name: quizData.name || 'Anonymous User',
-			email: quizData.email || 'quiz@example.com',
-			score: quizData.score || 85,
-			timestamp: quizData.timestamp || new Date().toISOString()
+			name: finalQuizData.name || 'Anonymous User',
+			email: finalQuizData.email || 'quiz@example.com',
+			score: finalQuizData.score || 85,
+			timestamp: finalQuizData.timestamp || new Date().toISOString()
 		};
 		
 		// Log the final submission data

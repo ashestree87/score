@@ -106,10 +106,12 @@ console.log("interests field: 'interests' (checkbox)");
 </Layout>
 
 <script>
-	// Improved form validation and handling
+	// Using localStorage to reliably store quiz data
 	document.addEventListener('DOMContentLoaded', () => {
 		const form = document.getElementById('startForm') as HTMLFormElement;
-		const startBtn = document.getElementById('startButton');
+		
+		// Clear previous quiz data when starting a new quiz
+		localStorage.removeItem('quizData');
 		
 		if (form) {
 			form.addEventListener('submit', (e) => {
@@ -139,22 +141,24 @@ console.log("interests field: 'interests' (checkbox)");
 					return false;
 				}
 				
-				// Form is valid, create URL with parameters
-				console.log('Form validation passed, submitting...');
+				// Store data in localStorage
+				const quizData = {
+					name,
+					email,
+					interests,
+					timestamp: new Date().toISOString()
+				};
 				
-				// Create URL with proper encoding of all parameters
+				// Save to localStorage
+				localStorage.setItem('quizData', JSON.stringify(quizData));
+				console.log('Quiz data saved to localStorage:', quizData);
+				
+				// Add basic params to URL just for visibility
 				const url = new URL('/quiz/question/1', window.location.origin);
-				
-				// Add name and email
 				url.searchParams.set('name', name);
 				url.searchParams.set('email', email);
 				
-				// Add all interests separately
-				interests.forEach(interest => {
-					url.searchParams.append('interests', interest);
-				});
-				
-				// Navigate to the new URL
+				// Navigate to the next page
 				window.location.href = url.toString();
 			});
 		}
