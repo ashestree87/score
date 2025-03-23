@@ -15,15 +15,19 @@ import Layout from '../../layouts/Layout.astro';
 // Helper function to generate personalized content based on quiz answers
 function generateRecommendations(params: URLSearchParams) {
 	const name = params.get('name') || 'there';
+	const email = params.get('email') || '';
 	const primaryGoal = params.get('primary_goal') || '';
 	const timeCommitment = params.get('time_commitment') || '';
 	const experienceLevel = params.get('experience_level') || '';
+	const interests = params.getAll('interests') || [];
 	const resources = params.getAll('preferred_resources') || [];
 	const timeline = params.get('timeline') || '';
 	
 	// For debugging - log all input values
 	console.log('Quiz inputs:', {
 		name,
+		email,
+		interests,
 		primaryGoal,
 		timeCommitment,
 		experienceLevel,
@@ -159,6 +163,7 @@ function generateRecommendations(params: URLSearchParams) {
 	
 	return {
 		name,
+		email,
 		score: finalScore,
 		goalBasedRecs,
 		experienceBasedApproach,
@@ -202,6 +207,28 @@ const recommendations = generateRecommendations(Astro.url.searchParams);
 				<p class="text-gray-700">
 					Your score indicates how well our solutions can address your specific needs and preferences.
 				</p>
+				
+				{Astro.url.searchParams.getAll('interests').length > 0 && (
+					<div class="mt-4 p-3 bg-gray-50 rounded-md">
+						<h3 class="text-sm font-semibold mb-1">Your Interests:</h3>
+						<ul class="list-disc pl-5">
+							{Astro.url.searchParams.getAll('interests').map((interest) => (
+								<li class="text-sm">{interest}</li>
+							))}
+						</ul>
+					</div>
+				)}
+				
+				{Astro.url.searchParams.getAll('preferred_resources').length > 0 && (
+					<div class="mt-3 p-3 bg-gray-50 rounded-md">
+						<h3 class="text-sm font-semibold mb-1">Your Preferred Resources:</h3>
+						<ul class="list-disc pl-5">
+							{Astro.url.searchParams.getAll('preferred_resources').map((resource) => (
+								<li class="text-sm">{resource}</li>
+							))}
+						</ul>
+					</div>
+				)}
 			</div>
 			
 			<div class="mb-8">
@@ -247,7 +274,15 @@ const recommendations = generateRecommendations(Astro.url.searchParams);
 	document.addEventListener('DOMContentLoaded', () => {
 		// Check if debug mode is requested or if required parameters are missing
 		const urlParams = new URLSearchParams(window.location.search);
-		const isDebugMode = urlParams.has('debug') || !urlParams.has('name') || !urlParams.has('email');
+		
+		// Check for missing or empty required parameters
+		const missingName = !urlParams.has('name') || urlParams.get('name') === '';
+		const missingEmail = !urlParams.has('email') || urlParams.get('email') === '';
+		const missingInterests = urlParams.getAll('interests').length === 0;
+		const missingResources = urlParams.getAll('preferred_resources').length === 0;
+		
+		// Enable debug mode if any required fields are missing or debug is explicitly requested
+		const isDebugMode = urlParams.has('debug') || missingName || missingEmail || missingInterests || missingResources;
 		
 		// Create a debug section on the page
 		const debugSection = document.createElement('div');
@@ -262,7 +297,16 @@ const recommendations = generateRecommendations(Astro.url.searchParams);
 		debugSection.style.fontFamily = 'monospace';
 		debugSection.style.whiteSpace = 'pre-wrap';
 		debugSection.style.fontSize = '14px';
-		debugSection.innerHTML = '<h3>API Debug Information</h3><p>Submitting quiz data...</p>';
+		
+		// Create header with debug status
+		let headerContent = '<h3>API Debug Information</h3>';
+		if (missingName) headerContent += '<p style="color:red">WARNING: name parameter is missing!</p>';
+		if (missingEmail) headerContent += '<p style="color:red">WARNING: email parameter is missing!</p>';
+		if (missingInterests) headerContent += '<p style="color:orange">NOTE: No interests were selected</p>';
+		if (missingResources) headerContent += '<p style="color:orange">NOTE: No preferred resources were selected</p>';
+		headerContent += '<p>Submitting quiz data...</p>';
+		
+		debugSection.innerHTML = headerContent;
 		document.body.appendChild(debugSection);
 		
 		// Add a toggle button
@@ -382,6 +426,12 @@ const recommendations = generateRecommendations(Astro.url.searchParams);
 		// Check specifically for critical fields
 		if (!params.has('name')) logToDebug('WARNING: name parameter is missing!', true);
 		if (!params.has('email')) logToDebug('WARNING: email parameter is missing!', true);
+		
+		// Check for array fields
+		const interestsValues = params.getAll('interests');
+		const resourcesValues = params.getAll('preferred_resources');
+		logToDebug(`Interests (${interestsValues.length}): ${interestsValues.join(', ')}`);
+		logToDebug(`Preferred Resources (${resourcesValues.length}): ${resourcesValues.join(', ')}`);
 		
 		// Get the score from the document
 		// This gets the actual score displayed on the page rather than relying on URL params

@@ -1,11 +1,20 @@
 ---
 import QuizLayout from '../../../layouts/QuizLayout.astro';
+
+// Debug info
+console.log("Question 4 - URL Parameters:");
+console.log("name:", Astro.url.searchParams.get('name'));
+console.log("email:", Astro.url.searchParams.get('email'));
+console.log("interests:", Astro.url.searchParams.getAll('interests'));
+console.log("primary_goal:", Astro.url.searchParams.get('primary_goal'));
+console.log("time_commitment:", Astro.url.searchParams.get('time_commitment'));
+console.log("experience_level:", Astro.url.searchParams.get('experience_level'));
 ---
 
 <QuizLayout title="Quiz | Question 4" currentStep={4} totalSteps={5}>
 	<h1 class="text-2xl font-bold text-primary mb-6">What resources do you prefer?</h1>
 	
-	<form action="/quiz/question/5" method="get" class="space-y-6">
+	<form action="/quiz/question/5" method="get" class="space-y-6" id="resourcesForm">
 		<!-- Pass along previous data -->
 		<input type="hidden" name="name" value={Astro.url.searchParams.get('name') || ''} />
 		<input type="hidden" name="email" value={Astro.url.searchParams.get('email') || ''} />
@@ -130,3 +139,38 @@ import QuizLayout from '../../../layouts/QuizLayout.astro';
 		</div>
 	</form>
 </QuizLayout> 
+
+<script>
+	// Form validation and debugging
+	document.addEventListener('DOMContentLoaded', () => {
+		const form = document.getElementById('resourcesForm') as HTMLFormElement;
+		
+		if (form) {
+			form.addEventListener('submit', (e) => {
+				// Get form data
+				const formData = new FormData(form);
+				const name = formData.get('name')?.toString() || '';
+				const email = formData.get('email')?.toString() || '';
+				const resources = formData.getAll('preferred_resources').map(value => value.toString());
+				
+				// Log submission data
+				console.log('Resources form submission data:');
+				console.log('Name:', name);
+				console.log('Email:', email);
+				console.log('Preferred Resources:', resources);
+				
+				// Ensure hidden fields are present
+				if (!name || !email) {
+					console.error('Missing required hidden fields: name or email');
+				}
+				
+				// Form is valid, continue with submission
+				console.log('Form data passing to next question:', {
+					name,
+					email,
+					resources
+				});
+			});
+		}
+	});
+</script> 

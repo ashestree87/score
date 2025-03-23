@@ -1,5 +1,11 @@
 ---
 import QuizLayout from '../../../layouts/QuizLayout.astro';
+
+// Debug info
+console.log("Question 1 - URL Parameters:");
+console.log("name:", Astro.url.searchParams.get('name'));
+console.log("email:", Astro.url.searchParams.get('email'));
+console.log("interests:", Astro.url.searchParams.getAll('interests'));
 ---
 
 <QuizLayout title="Quiz | Question 1" currentStep={1} totalSteps={5}>

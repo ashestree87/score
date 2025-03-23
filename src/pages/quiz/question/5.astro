@@ -1,5 +1,12 @@
 ---
 import QuizLayout from '../../../layouts/QuizLayout.astro';
+
+// Debug info
+console.log("Question 5 - URL Parameters:");
+console.log("name:", Astro.url.searchParams.get('name'));
+console.log("email:", Astro.url.searchParams.get('email'));
+console.log("interests:", Astro.url.searchParams.getAll('interests'));
+console.log("preferred_resources:", Astro.url.searchParams.getAll('preferred_resources'));
 ---
 
 <QuizLayout title="Quiz | Final Question" currentStep={5} totalSteps={5}>
